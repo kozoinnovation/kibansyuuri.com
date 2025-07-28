@@ -5,14 +5,7 @@ import { useForm, UseFormRegisterReturn } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import emailjs from '@emailjs/browser';
-import {
-  CircuitBoard,
-  Menu,
-  X,
-  Loader2,
-  AlertCircle,
-  CheckCircle,
-} from 'lucide-react';
+import { CircuitBoard, Menu, X, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 
 // Tailwind 用ユーティリティ
@@ -63,8 +56,9 @@ const Button = React.forwardRef<
     />
   );
 });
+Button.displayName = 'Button';
 
-// Input / Textarea コンポーネント
+// Input コンポーネント
 const Input = React.forwardRef<HTMLInputElement, React.InputHTMLAttributes<HTMLInputElement>>(
   (props, ref) => (
     <input
@@ -77,6 +71,9 @@ const Input = React.forwardRef<HTMLInputElement, React.InputHTMLAttributes<HTMLI
     />
   )
 );
+Input.displayName = 'Input';
+
+// Textarea コンポーネント
 const Textarea = React.forwardRef<HTMLTextAreaElement, React.TextareaHTMLAttributes<HTMLTextAreaElement>>(
   (props, ref) => (
     <textarea
@@ -89,9 +86,10 @@ const Textarea = React.forwardRef<HTMLTextAreaElement, React.TextareaHTMLAttribu
     />
   )
 );
+Textarea.displayName = 'Textarea';
 
-// ページ遷移用ヘッダー／フッター
-const Header = () => {
+// ヘッダー
+const Header: React.FC = () => {
   const [open, setOpen] = useState(false);
   const links = [
     { name: 'ホーム', href: '/' },
@@ -134,13 +132,17 @@ const Header = () => {
     </header>
   );
 };
-const Footer = () => (
+Header.displayName = 'Header';
+
+// フッター
+const Footer: React.FC = () => (
   <footer className="bg-gray-50 border-t py-6 mt-12">
     <div className="container mx-auto text-center text-sm text-gray-500">
       &copy; {new Date().getFullYear()} kibansyuuri.com. All Rights Reserved.
     </div>
   </footer>
 );
+Footer.displayName = 'Footer';
 
 // フォームのバリデーションスキーマ
 const formSchema = z.object({
@@ -164,6 +166,7 @@ type InputGroupInputProps = {
   isTextarea?: false;
 } & UseFormRegisterReturn &
   React.InputHTMLAttributes<HTMLInputElement>;
+
 type InputGroupTextareaProps = {
   label: string;
   id: string;
@@ -171,6 +174,7 @@ type InputGroupTextareaProps = {
   isTextarea: true;
 } & UseFormRegisterReturn &
   React.TextareaHTMLAttributes<HTMLTextAreaElement>;
+
 type InputGroupProps = InputGroupInputProps | InputGroupTextareaProps;
 
 const InputGroup: React.FC<InputGroupProps> = (props) => {
@@ -189,14 +193,16 @@ const InputGroup: React.FC<InputGroupProps> = (props) => {
     </div>
   );
 };
+InputGroup.displayName = 'InputGroup';
 
 // ContactForm
 const ContactForm: React.FC = () => {
   const formRef = useRef<HTMLFormElement>(null);
-  const [status, setStatus] = useState<{ status: 'idle' | 'loading' | 'success' | 'error'; message: string }>({
-    status: 'idle',
-    message: '',
-  });
+  const [status, setStatus] = useState<{
+    status: 'idle' | 'loading' | 'success' | 'error';
+    message: string;
+  }>({ status: 'idle', message: '' });
+
   const { register, handleSubmit, reset, formState: { errors } } = useForm<FormValues>({
     resolver: zodResolver(formSchema),
   });
@@ -219,7 +225,7 @@ const ContactForm: React.FC = () => {
   });
 
   return (
-    <div className="bg-white py-16">
+    <div className="bg-white py-16 sm:py-24">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="max-w-2xl mx-auto">
           <h1 className="text-3xl font-bold text-center mb-4">お問い合わせ</h1>
@@ -242,17 +248,17 @@ const ContactForm: React.FC = () => {
             <InputGroup label="お名前" id="name" error={errors.name?.message} {...register('name')} />
             <InputGroup label="電話番号" id="phone" error={errors.phone?.message} {...register('phone')} />
             <InputGroup label="メールアドレス" id="email" error={errors.email?.message} {...register('email')} />
-            <InputGroup label="機種名" id="device" error={errors.device?.message} {...register('device')} placeholder="例: iPhone 13 Pro" />
-            <InputGroup label="故障内容・ご相談内容" id="message" isTextarea error={errors.message?.message} {...register('message')} />
+            <InputGroup label="機種名" id="device" error={errors.device?.message} {...register('device')} placeholder="例: iPhone 13 Pro" />
+            <InputGroup
+              label="故障内容・ご相談内容"
+              id="message"
+              isTextarea
+              error={errors.message?.message}
+              {...register('message')}
+            />
             <div>
               <Button type="submit" className="w-full" disabled={status.status === 'loading'}>
-                {status.status === 'loading' ? (
-                  <>
-                    <Loader2 className="animate-spin mr-2" />送信中...
-                  </>
-                ) : (
-                  '同意して送信する'
-                )}
+                {status.status === 'loading' ? <><Loader2 className="animate-spin mr-2" />送信中...</> : '同意して送信する'}
               </Button>
             </div>
           </form>
@@ -265,8 +271,8 @@ const ContactForm: React.FC = () => {
     </div>
   );
 };
+ContactForm.displayName = 'ContactForm';
 
-// ページコンポーネント
 export default function ContactPage() {
   return (
     <>
