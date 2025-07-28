@@ -14,7 +14,6 @@ import Link from 'next/link';
 const cn = (...classes: (string | undefined | null | false)[]) =>
   classes.filter(Boolean).join(' ');
 
-// ✅ 修正済み Button（variantとsizeを限定）
 type ButtonVariant = 'default' | 'destructive' | 'outline' | 'secondary' | 'ghost' | 'link';
 type ButtonSize = 'default' | 'sm' | 'lg' | 'icon';
 
@@ -150,7 +149,7 @@ const ContactForm = () => {
   const formRef = useRef<HTMLFormElement>(null);
   const { register, handleSubmit, formState: { errors }, reset } = useForm<FormValues>({ resolver: zodResolver(formSchema) });
 
-  const onSubmit = (data: FormValues) => {
+  const onSubmit = () => {
     setFormStatus({ status: 'loading', message: '' });
     if (!formRef.current) return;
 
@@ -213,7 +212,15 @@ const ContactForm = () => {
   );
 };
 
-const InputGroup = ({ label, id, error, isTextarea = false, ...props }: any) => (
+type InputGroupProps = {
+  label: string;
+  id: string;
+  error?: string;
+  isTextarea?: boolean;
+} & React.InputHTMLAttributes<HTMLInputElement> &
+  React.TextareaHTMLAttributes<HTMLTextAreaElement>;
+
+const InputGroup = ({ label, id, error, isTextarea = false, ...props }: InputGroupProps) => (
   <div>
     <label htmlFor={id} className="block text-sm font-semibold leading-6 text-gray-900">{label}</label>
     <div className="mt-2.5">
