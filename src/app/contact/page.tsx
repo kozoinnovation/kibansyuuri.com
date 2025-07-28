@@ -58,7 +58,7 @@ const Button = React.forwardRef<
 });
 Button.displayName = 'Button';
 
-// Input コンポーネント
+// Input / Textarea コンポーネント
 const Input = React.forwardRef<HTMLInputElement, React.InputHTMLAttributes<HTMLInputElement>>(
   (props, ref) => (
     <input
@@ -73,7 +73,6 @@ const Input = React.forwardRef<HTMLInputElement, React.InputHTMLAttributes<HTMLI
 );
 Input.displayName = 'Input';
 
-// Textarea コンポーネント
 const Textarea = React.forwardRef<HTMLTextAreaElement, React.TextareaHTMLAttributes<HTMLTextAreaElement>>(
   (props, ref) => (
     <textarea
@@ -166,7 +165,6 @@ type InputGroupInputProps = {
   isTextarea?: false;
 } & UseFormRegisterReturn &
   React.InputHTMLAttributes<HTMLInputElement>;
-
 type InputGroupTextareaProps = {
   label: string;
   id: string;
@@ -174,40 +172,35 @@ type InputGroupTextareaProps = {
   isTextarea: true;
 } & UseFormRegisterReturn &
   React.TextareaHTMLAttributes<HTMLTextAreaElement>;
-
 type InputGroupProps = InputGroupInputProps | InputGroupTextareaProps;
 
-const InputGroup: React.FC<InputGroupProps> = (props) => {
-  const { label, id, error, isTextarea, ...rest } = props;
-  return (
-    <div>
-      <label htmlFor={id} className="block text-sm font-semibold mb-1">
-        {label}
-      </label>
-      {isTextarea ? (
-        <Textarea id={id} {...(rest as React.TextareaHTMLAttributes<HTMLTextAreaElement>)} />
-      ) : (
-        <Input id={id} {...(rest as React.InputHTMLAttributes<HTMLInputElement>)} />
-      )}
-      {error && <p className="mt-1 text-sm text-red-600">{error}</p>}
-    </div>
-  );
-};
+const InputGroup: React.FC<InputGroupProps> = ({ label, id, error, isTextarea, ...rest }) => (
+  <div>
+    <label htmlFor={id} className="block text-sm font-semibold mb-1">
+      {label}
+    </label>
+    {isTextarea ? (
+      <Textarea id={id} {...(rest as React.TextareaHTMLAttributes<HTMLTextAreaElement>)} />
+    ) : (
+      <Input id={id} {...(rest as React.InputHTMLAttributes<HTMLInputElement>)} />
+    )}
+    {error && <p className="mt-1 text-sm text-red-600">{error}</p>}
+  </div>
+);
 InputGroup.displayName = 'InputGroup';
 
-// ContactForm
+// お問い合わせフォーム
 const ContactForm: React.FC = () => {
   const formRef = useRef<HTMLFormElement>(null);
   const [status, setStatus] = useState<{
     status: 'idle' | 'loading' | 'success' | 'error';
     message: string;
   }>({ status: 'idle', message: '' });
-
   const { register, handleSubmit, reset, formState: { errors } } = useForm<FormValues>({
     resolver: zodResolver(formSchema),
   });
 
-  const onSubmit = handleSubmit(async (data) => {
+  const onSubmit = handleSubmit(async () => {
     setStatus({ status: 'loading', message: '' });
     if (!formRef.current) return;
     try {
@@ -249,16 +242,17 @@ const ContactForm: React.FC = () => {
             <InputGroup label="電話番号" id="phone" error={errors.phone?.message} {...register('phone')} />
             <InputGroup label="メールアドレス" id="email" error={errors.email?.message} {...register('email')} />
             <InputGroup label="機種名" id="device" error={errors.device?.message} {...register('device')} placeholder="例: iPhone 13 Pro" />
-            <InputGroup
-              label="故障内容・ご相談内容"
-              id="message"
-              isTextarea
-              error={errors.message?.message}
-              {...register('message')}
-            />
+            <InputGroup label="故障内容・ご相談内容" id="message" isTextarea error={errors.message?.message} {...register('message')} />
             <div>
               <Button type="submit" className="w-full" disabled={status.status === 'loading'}>
-                {status.status === 'loading' ? <><Loader2 className="animate-spin mr-2" />送信中...</> : '同意して送信する'}
+                {status.status === 'loading' ? (
+                  <>
+                    <Loader2 className="animate-spin mr-2" />
+                    送信中...
+                  </>
+                ) : (
+                  '同意して送信する'
+                )}
               </Button>
             </div>
           </form>
