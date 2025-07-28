@@ -6,49 +6,49 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import emailjs from '@emailjs/browser';
 import {
-  CircuitBoard, Menu, X, ChevronRight, Upload,
+  CircuitBoard, Menu, X,
   Loader2, AlertCircle, CheckCircle
 } from 'lucide-react';
+import Link from 'next/link';
 
-// ---------- ヘルパーUIコンポーネント ----------
+const cn = (...classes: (string | undefined | null | false)[]) =>
+  classes.filter(Boolean).join(' ');
 
-const cn = (...classes: (string | undefined | null | false)[]) => classes.filter(Boolean).join(' ');
+// ✅ 修正済み Button（variantとsizeを限定）
+type ButtonVariant = 'default' | 'destructive' | 'outline' | 'secondary' | 'ghost' | 'link';
+type ButtonSize = 'default' | 'sm' | 'lg' | 'icon';
 
-type ButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
-  variant?: 'default' | 'destructive' | 'outline' | 'secondary' | 'ghost' | 'link';
-  size?: 'default' | 'sm' | 'lg' | 'icon';
-};
-
-const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-  function Button({ className, variant = 'default', size = 'default', ...props }, ref) {
-    const variants = {
-      default: "bg-blue-600 text-white hover:bg-blue-600/90",
-      destructive: "bg-red-500 text-white hover:bg-red-500/90",
-      outline: "border border-gray-200 bg-transparent hover:bg-gray-100",
-      secondary: "bg-gray-100 text-gray-900 hover:bg-gray-100/80",
-      ghost: "hover:bg-gray-100",
-      link: "text-blue-600 underline-offset-4 hover:underline",
-    };
-    const sizes = {
-      default: "h-10 px-4 py-2",
-      sm: "h-9 rounded-md px-3",
-      lg: "h-11 rounded-md px-8",
-      icon: "h-10 w-10",
-    };
-    return (
-      <button
-        className={cn(
-          "inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-white transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50",
-          variants[variant],
-          sizes[size],
-          className
-        )}
-        ref={ref}
-        {...props}
-      />
-    );
-  }
-);
+const Button = React.forwardRef<
+  HTMLButtonElement,
+  React.ButtonHTMLAttributes<HTMLButtonElement> & { variant?: ButtonVariant; size?: ButtonSize }
+>(function Button({ className, variant = 'default', size = 'default', ...props }, ref) {
+  const variants = {
+    default: "bg-blue-600 text-white hover:bg-blue-600/90",
+    destructive: "bg-red-500 text-white hover:bg-red-500/90",
+    outline: "border border-gray-200 bg-transparent hover:bg-gray-100",
+    secondary: "bg-gray-100 text-gray-900 hover:bg-gray-100/80",
+    ghost: "hover:bg-gray-100",
+    link: "text-blue-600 underline-offset-4 hover:underline",
+  };
+  const sizes = {
+    default: "h-10 px-4 py-2",
+    sm: "h-9 rounded-md px-3",
+    lg: "h-11 rounded-md px-8",
+    icon: "h-10 w-10",
+  };
+  return (
+    <button
+      className={cn(
+        "inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-white transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50",
+        variants[variant],
+        sizes[size],
+        className
+      )}
+      ref={ref}
+      {...props}
+    />
+  );
+});
 
 const Input = React.forwardRef<HTMLInputElement, React.InputHTMLAttributes<HTMLInputElement>>(
   function Input({ className, ...props }, ref) {
@@ -80,8 +80,6 @@ const Textarea = React.forwardRef<HTMLTextAreaElement, React.TextareaHTMLAttribu
   }
 );
 
-// ---------- ヘッダー＆フッター ----------
-
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const navLinks = [
@@ -95,15 +93,15 @@ const Header = () => {
     <header className="bg-white/90 backdrop-blur-md sticky top-0 z-50 border-b">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
-          <a href="/" className="flex items-center space-x-2">
+          <Link href="/" className="flex items-center space-x-2">
             <CircuitBoard className="h-7 w-7 text-blue-600" />
             <span className="text-xl font-bold text-gray-800">基板修理.com</span>
-          </a>
+          </Link>
           <nav className="hidden md:flex items-center space-x-6">
             {navLinks.map((link) => (
-              <a key={link.name} href={link.href} className="text-sm font-medium text-gray-500 hover:text-blue-600 transition-colors">
+              <Link key={link.name} href={link.href} className="text-sm font-medium text-gray-500 hover:text-blue-600 transition-colors">
                 {link.name}
-              </a>
+              </Link>
             ))}
           </nav>
           <div className="md:hidden">
@@ -117,9 +115,9 @@ const Header = () => {
         <div className="md:hidden bg-white border-t">
           <nav className="flex flex-col px-4 pt-2 pb-4 space-y-1">
             {navLinks.map((link) => (
-              <a key={link.name} href={link.href} onClick={() => setIsMenuOpen(false)} className="px-3 py-2 rounded-md text-base font-medium text-gray-600 hover:bg-gray-100 hover:text-blue-600">
+              <Link key={link.name} href={link.href} onClick={() => setIsMenuOpen(false)} className="px-3 py-2 rounded-md text-base font-medium text-gray-600 hover:bg-gray-100 hover:text-blue-600">
                 {link.name}
-              </a>
+              </Link>
             ))}
           </nav>
         </div>
@@ -136,11 +134,9 @@ const Footer = () => (
   </footer>
 );
 
-// ---------- バリデーションスキーマ ----------
-
 const formSchema = z.object({
   name: z.string().min(1, { message: "お名前は必須です。" }),
-  phone: z.string().min(10, { message: "有効な電話番号を入力してください。" }).regex(/^([0-9]{10,11})$/, { message: "電話番号の形式が正しくありません。" }),
+  phone: z.string().min(10).regex(/^([0-9]{10,11})$/, { message: "電話番号の形式が正しくありません。" }),
   email: z.string().email({ message: "有効なメールアドレスを入力してください。" }),
   device: z.string().min(1, { message: "機種名は必須です。" }),
   message: z.string().min(10, { message: "ご相談内容は10文字以上で入力してください。" }),
@@ -149,26 +145,21 @@ const formSchema = z.object({
 
 type FormValues = z.infer<typeof formSchema>;
 
-// ---------- フォームコンポーネント ----------
-
 const ContactForm = () => {
-  const [formStatus, setFormStatus] = useState<{ status: 'idle' | 'loading' | 'success' | 'error'; message: string }>({ status: 'idle', message: '' });
+  const [formStatus, setFormStatus] = useState({ status: 'idle', message: '' });
   const formRef = useRef<HTMLFormElement>(null);
-
-  const { register, handleSubmit, formState: { errors }, reset } = useForm<FormValues>({
-    resolver: zodResolver(formSchema),
-  });
+  const { register, handleSubmit, formState: { errors }, reset } = useForm<FormValues>({ resolver: zodResolver(formSchema) });
 
   const onSubmit = (data: FormValues) => {
     setFormStatus({ status: 'loading', message: '' });
-
     if (!formRef.current) return;
 
-    const serviceID = process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID!;
-    const templateID = process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID!;
-    const publicKey = process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY!;
-
-    emailjs.sendForm(serviceID, templateID, formRef.current, publicKey)
+    emailjs.sendForm(
+      process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID!,
+      process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID!,
+      formRef.current,
+      process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY!
+    )
       .then(() => {
         setFormStatus({ status: 'success', message: 'お問い合わせありがとうございます。確認後、担当者よりご連絡いたします。' });
         reset();
@@ -222,8 +213,6 @@ const ContactForm = () => {
   );
 };
 
-// ---------- 再利用可能なフォームパーツ ----------
-
 const InputGroup = ({ label, id, error, isTextarea = false, ...props }: any) => (
   <div>
     <label htmlFor={id} className="block text-sm font-semibold leading-6 text-gray-900">{label}</label>
@@ -233,8 +222,6 @@ const InputGroup = ({ label, id, error, isTextarea = false, ...props }: any) => 
     </div>
   </div>
 );
-
-// ---------- ページエクスポート ----------
 
 export default function ContactPage() {
   return (
