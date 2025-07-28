@@ -8,26 +8,17 @@ import emailjs from '@emailjs/browser';
 import { CircuitBoard, Menu, X, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 
-// Tailwind 用ユーティリティ
+// utility for Tailwind classes
 const cn = (...classes: (string | undefined | null | false)[]) =>
   classes.filter(Boolean).join(' ');
 
-// Button コンポーネント
-type ButtonVariant =
-  | 'default'
-  | 'destructive'
-  | 'outline'
-  | 'secondary'
-  | 'ghost'
-  | 'link';
+// Button component with displayName
+type ButtonVariant = 'default' | 'destructive' | 'outline' | 'secondary' | 'ghost' | 'link';
 type ButtonSize = 'default' | 'sm' | 'lg' | 'icon';
 
 const Button = React.forwardRef<
   HTMLButtonElement,
-  React.ButtonHTMLAttributes<HTMLButtonElement> & {
-    variant?: ButtonVariant;
-    size?: ButtonSize;
-  }
+  React.ButtonHTMLAttributes<HTMLButtonElement> & { variant?: ButtonVariant; size?: ButtonSize }
 >(function Button({ className, variant = 'default', size = 'default', ...props }, ref) {
   const variants = {
     default: 'bg-blue-600 text-white hover:bg-blue-600/90',
@@ -58,7 +49,7 @@ const Button = React.forwardRef<
 });
 Button.displayName = 'Button';
 
-// Input / Textarea コンポーネント
+// Input and Textarea
 const Input = React.forwardRef<HTMLInputElement, React.InputHTMLAttributes<HTMLInputElement>>(
   (props, ref) => (
     <input
@@ -87,7 +78,7 @@ const Textarea = React.forwardRef<HTMLTextAreaElement, React.TextareaHTMLAttribu
 );
 Textarea.displayName = 'Textarea';
 
-// ヘッダー
+// Header
 const Header: React.FC = () => {
   const [open, setOpen] = useState(false);
   const links = [
@@ -133,7 +124,7 @@ const Header: React.FC = () => {
 };
 Header.displayName = 'Header';
 
-// フッター
+// Footer
 const Footer: React.FC = () => (
   <footer className="bg-gray-50 border-t py-6 mt-12">
     <div className="container mx-auto text-center text-sm text-gray-500">
@@ -143,7 +134,7 @@ const Footer: React.FC = () => (
 );
 Footer.displayName = 'Footer';
 
-// フォームのバリデーションスキーマ
+// Form schema
 const formSchema = z.object({
   name: z.string().min(1, { message: 'お名前は必須です。' }),
   phone: z
@@ -157,7 +148,7 @@ const formSchema = z.object({
 });
 type FormValues = z.infer<typeof formSchema>;
 
-// InputGroupProps を input/textarea で分岐
+// InputGroup
 type InputGroupInputProps = {
   label: string;
   id: string;
@@ -165,6 +156,7 @@ type InputGroupInputProps = {
   isTextarea?: false;
 } & UseFormRegisterReturn &
   React.InputHTMLAttributes<HTMLInputElement>;
+
 type InputGroupTextareaProps = {
   label: string;
   id: string;
@@ -172,6 +164,7 @@ type InputGroupTextareaProps = {
   isTextarea: true;
 } & UseFormRegisterReturn &
   React.TextareaHTMLAttributes<HTMLTextAreaElement>;
+
 type InputGroupProps = InputGroupInputProps | InputGroupTextareaProps;
 
 const InputGroup: React.FC<InputGroupProps> = ({ label, id, error, isTextarea, ...rest }) => (
@@ -189,13 +182,13 @@ const InputGroup: React.FC<InputGroupProps> = ({ label, id, error, isTextarea, .
 );
 InputGroup.displayName = 'InputGroup';
 
-// お問い合わせフォーム
+// ContactForm
 const ContactForm: React.FC = () => {
   const formRef = useRef<HTMLFormElement>(null);
-  const [status, setStatus] = useState<{
-    status: 'idle' | 'loading' | 'success' | 'error';
-    message: string;
-  }>({ status: 'idle', message: '' });
+  const [status, setStatus] = useState<{ status: 'idle' | 'loading' | 'success' | 'error'; message: string }>({
+    status: 'idle',
+    message: '',
+  });
   const { register, handleSubmit, reset, formState: { errors } } = useForm<FormValues>({
     resolver: zodResolver(formSchema),
   });
