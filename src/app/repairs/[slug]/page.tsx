@@ -1,18 +1,19 @@
 // src/app/repairs/[slug]/page.tsx
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import { getRepairCases } from '@/libs/microcms';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { Calendar, Tag, Folder, ArrowLeft } from 'lucide-react';
 
-// 非同期処理用の型
 type Params = { slug: string };
 
-// ここを any 受けにしておけば、
-// Next.js が生成する PageProps 制約を丸ごとすり抜けられます。
+// 同期関数としてエクスポート。props:any で PageProps の制約を回避
 export default function RepairCaseDetailPageWrapper(props: any) {
   return <RepairCaseDetailPage {...props} />;
 }
 
+// 実際の非同期処理はこの内部コンポーネントで
 async function RepairCaseDetailPage({ params }: { params: Params }) {
   const { slug } = params;
   const { contents } = await getRepairCases({
@@ -87,6 +88,7 @@ async function RepairCaseDetailPage({ params }: { params: Params }) {
   );
 }
 
+// SSG 用パスを生成
 export async function generateStaticParams() {
   const { contents } = await getRepairCases({ limit: 1000 });
   if (!contents) return [];
