@@ -6,33 +6,27 @@ import { Calendar, Tag, Folder, ArrowLeft } from 'lucide-react';
 import type { Metadata } from 'next';
 import type { RepairCase } from '@/types/repair';
 
-type Props = {
-  params: {
-    slug: string;
-  };
-  searchParams?: {
-    [key: string]: string | string[] | undefined;
-  };
+// ✅ 型定義（Next.jsの規定通りの PageProps に合わせる）
+type PageProps = {
+  params: { slug: string };
 };
 
+// ✅ SSG用パス生成
 export async function generateStaticParams() {
   try {
     const { contents } = await getRepairCases({ limit: 1000 });
-    if (!contents || contents.length === 0) {
-      return [];
-    }
     return contents.map((post) => ({ slug: post.slug }));
-  } catch (error) {
-    console.error("Failed to generate static params:", error);
+  } catch (err) {
+    console.error('Failed to generate static params:', err);
     return [];
   }
 }
 
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
+// ✅ SEO用メタデータ生成
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug } = params;
   const { contents } = await getRepairCases({ filters: `slug[equals]${slug}` });
   const post = contents?.[0];
-
   if (!post) {
     return {
       title: '修理事例 | Not Found',
@@ -45,14 +39,15 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-export default async function RepairCaseDetailPage({ params }: Props) {
+// ✅ 本体ページ
+export default async function RepairCaseDetailPage({ params }: PageProps) {
   const { slug } = params;
-  const { contents } = await getRepairCases({ filters: `slug[equals]${slug}` });
-  const post = contents?.[0] as RepairCase | undefined;
+  const { contents } = await getRepairCases({
+    filters: `slug[equals]${slug}`,
+  });
 
-  if (!post) {
-    notFound();
-  }
+  const post = contents?.[0] as RepairCase | undefined;
+  if (!post) notFound();
 
   return (
     <div className="bg-white min-h-screen">
@@ -73,9 +68,7 @@ export default async function RepairCaseDetailPage({ params }: Props) {
           <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-gray-500 mb-6 border-b pb-4">
             <div className="flex items-center gap-1.5">
               <Calendar size={14} />
-              <span>
-                {new Date(post.publishedAt).toLocaleDateString('ja-JP')}
-              </span>
+              <span>{new Date(post.publishedAt).toLocaleDateString('ja-JP')}</span>
             </div>
             {post.category && (
               <div className="flex items-center gap-1.5">
