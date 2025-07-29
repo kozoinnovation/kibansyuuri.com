@@ -1,58 +1,54 @@
 // src/app/repairs/[slug]/page.tsx
-import { getRepairCases } from '@/libs/microcms';
-import { notFound } from 'next/navigation';
-import Link from 'next/link';
-import { Calendar, Tag, Folder, ArrowLeft } from 'lucide-react';
-import type { Metadata } from 'next';
-import type { RepairCase } from '@/types/repair';
+import { getRepairCases } from '@/libs/microcms'
+import { notFound } from 'next/navigation'
+import Link from 'next/link'
+import { Calendar, Tag, Folder, ArrowLeft } from 'lucide-react'
+import type { Metadata } from 'next'
+import type { RepairCase } from '@/types/repair'
 
-// Next.js App Router がページコンポーネントに渡す props の型定義
-type PageProps = {
-  params: {
-    slug: string;
-  };
-  searchParams?: {
-    [key: string]: string | string[] | undefined;
-  };
-};
-
-// SSG 用パスを一括生成
+// ─── SSG 用パスを一括生成 ──────────────────────────────
 export async function generateStaticParams() {
-  const { contents } = await getRepairCases({ limit: 1000 });
-  if (!contents || contents.length === 0) {
-    return [];
-  }
-  return contents.map((post) => ({ slug: post.slug }));
+  const { contents } = await getRepairCases({ limit: 1000 })
+  if (!contents || contents.length === 0) return []
+  return contents.map((post) => ({ slug: post.slug }))
 }
 
-// ページメタデータ（SEO対応）
-export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
-  const { slug } = params;
-  const { contents } = await getRepairCases({ filters: `slug[equals]${slug}` });
-  const post = contents?.[0];
-
+// ─── ページメタデータ（SEO対応） ───────────────────────
+export async function generateMetadata({
+  params,
+}: {
+  params: { slug: string }
+}): Promise<Metadata> {
+  const { slug } = params
+  const { contents } = await getRepairCases({
+    filters: `slug[equals]${slug}`,
+  })
+  const post = contents?.[0]
   if (!post) {
-    return { title: '修理事例 | Not Found' };
+    return {
+      title: '修理事例 | Not Found',
+    }
   }
   return {
     title: `${post.title} | 修理事例`,
-    description: post.body?.slice(0, 120).replace(/<[^>]+>/g, '') ?? '修理事例の詳細ページです。',
-  };
+    description:
+      post.body?.slice(0, 120).replace(/<[^>]+>/g, '') ??
+      '修理事例の詳細ページです。',
+  }
 }
 
-// ───────────────────────────────────────
-// ✅ 最終修正：ラッパーを廃止し、単一の async サーバーコンポーネントとして定義
-// ───────────────────────────────────────
-export default async function RepairCaseDetailPage({ params }: PageProps) {
-  const { slug } = params;
+// ─── デフォルトエクスポート：単一の async サーバーコンポーネント ───────
+export default async function RepairCaseDetailPage({
+  params,
+}: {
+  params: { slug: string }
+}) {
+  const { slug } = params
   const { contents } = await getRepairCases({
     filters: `slug[equals]${slug}`,
-  });
-
-  const post = contents?.[0] as RepairCase | undefined;
-  if (!post) {
-    notFound();
-  }
+  })
+  const post = contents?.[0] as RepairCase | undefined
+  if (!post) notFound()
 
   return (
     <div className="bg-white min-h-screen">
@@ -120,5 +116,5 @@ export default async function RepairCaseDetailPage({ params }: PageProps) {
         </article>
       </main>
     </div>
-  );
+  )
 }
