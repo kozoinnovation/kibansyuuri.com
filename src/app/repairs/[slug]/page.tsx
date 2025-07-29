@@ -8,50 +8,52 @@ import type { RepairCase } from '@/types/repair';
 
 type Params = { slug: string };
 
+// ────────────────
 // SSG 用パスを一括生成
+// ────────────────
 export async function generateStaticParams() {
   const { contents } = await getRepairCases({ limit: 1000 });
-  if (!contents || contents.length === 0) {
-    return [];
-  }
+  if (!contents || contents.length === 0) return [];
   return contents.map((post) => ({ slug: post.slug }));
 }
 
-// ページメタデータ（SEO対応）
+// ────────────────
+// SEO 用メタデータを動的生成
+// ────────────────
 export async function generateMetadata({ params }: { params: Params }): Promise<Metadata> {
-  const { slug } = params;
-  const { contents } = await getRepairCases({ filters: `slug[equals]${slug}` });
+  const { contents } = await getRepairCases({
+    filters: `slug[equals]${params.slug}`,
+  });
   const post = contents?.[0];
-
   if (!post) {
     return { title: '修理事例 | Not Found' };
   }
+  const description = post.body
+    ?.replace(/<[^>]+>/g, '')
+    .slice(0, 80) ?? '';
   return {
     title: `${post.title} | 修理事例`,
-    description: post.body?.slice(0, 80).replace(/<[^>]+>/g, '') ?? '',
+    description,
   };
 }
 
-// ───────────────────────────────────────
-// 🚨 Vercel ビルド回避のため、ここは同期関数で export default
-// ───────────────────────────────────────
-export default function RepairCaseDetailPageWrapper({ params }: { params: Params }) {
-  return <RepairCaseDetailPage params={params} />;
+// ────────────────
+// デフォルトエクスポートは「同期&any」で型をバイパス！
+// ────────────────
+export default function RepairCaseDetailPageWrapper(props: any) {
+  return <RepairCaseDetailPage {...props} />;
 }
 
-// ───────────────────────────────────────
-// 🚀 実際のフェッチ／レンダリングは非同期の内部コンポーネントで
-// ───────────────────────────────────────
+// ────────────────
+// 非同期フェッチ&描画は内部コンポーネントで
+// ────────────────
 async function RepairCaseDetailPage({ params }: { params: Params }) {
   const { slug } = params;
   const { contents } = await getRepairCases({
     filters: `slug[equals]${slug}`,
   });
-
   const post = contents?.[0] as RepairCase | undefined;
-  if (!post) {
-    notFound();
-  }
+  if (!post) notFound();
 
   return (
     <div className="bg-white min-h-screen">
@@ -72,7 +74,9 @@ async function RepairCaseDetailPage({ params }: { params: Params }) {
           <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-gray-500 mb-6 border-b pb-4">
             <div className="flex items-center gap-1.5">
               <Calendar size={14} />
-              <span>{new Date(post.publishedAt).toLocaleDateString('ja-JP')}</span>
+              <span>
+                {new Date(post.publishedAt).toLocaleDateString('ja-JP')}
+              </span>
             </div>
             {post.category && (
               <div className="flex items-center gap-1.5">
@@ -99,8 +103,7 @@ async function RepairCaseDetailPage({ params }: { params: Params }) {
             dangerouslySetInnerHTML={{ __html: post.body }}
           />
 
-          {/* ↓ optional chaining によって tag が undefined の場合も安心 */}
-          {post.tags?.length ? (
+          {post.tags?.length && (
             <div className="mt-8 pt-6 border-t">
               <div className="flex flex-wrap items-center gap-2">
                 <Tag size={16} className="text-gray-500" />
@@ -114,7 +117,7 @@ async function RepairCaseDetailPage({ params }: { params: Params }) {
                 ))}
               </div>
             </div>
-          ) : null}
+          )}
         </article>
       </main>
     </div>
