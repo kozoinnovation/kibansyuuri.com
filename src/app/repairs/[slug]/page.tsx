@@ -1,4 +1,6 @@
 // src/app/repairs/[slug]/page.tsx
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import { getRepairCases } from '@/libs/microcms'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
@@ -9,7 +11,9 @@ import type { RepairCase } from '@/types/repair'
 // ─── SSG 用パスを一括生成 ──────────────────────────────
 export async function generateStaticParams() {
   const { contents } = await getRepairCases({ limit: 1000 })
-  if (!contents || contents.length === 0) return []
+  if (!contents || contents.length === 0) {
+    return []
+  }
   return contents.map((post) => ({ slug: post.slug }))
 }
 
