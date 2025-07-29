@@ -1,4 +1,4 @@
-// 修理事例詳細ページ（page.tsx）
+// src/app/repairs/[slug]/page.tsx
 import { getRepairCases } from '@/libs/microcms';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
@@ -8,15 +8,20 @@ type Params = { slug: string };
 
 export async function generateStaticParams() {
   const { contents } = await getRepairCases({ limit: 1000 });
+  // microCMSからデータが取得できなかった場合のエラーハンドリングを追加
+  if (!contents) {
+    return [];
+  }
   return contents.map((post) => ({ slug: post.slug }));
 }
 
-// ここが重要！ asyncではなく、通常関数で export default
+// 🚨 ここは同期関数で export default！！
+// Vercelのビルドエラーを回避するためのラッパーコンポーネント
 export default function RepairCaseDetailPageWrapper({ params }: { params: Params }) {
   return <RepairCaseDetailPage params={params} />;
 }
 
-// async 処理はラップ内でやる
+// 🚀 非同期処理はラップされたこのコンポーネントで行う
 async function RepairCaseDetailPage({ params }: { params: Params }) {
   const { slug } = params;
   const { contents } = await getRepairCases({
@@ -24,7 +29,9 @@ async function RepairCaseDetailPage({ params }: { params: Params }) {
   });
 
   const post = contents?.[0];
-  if (!post) notFound();
+  if (!post) {
+    notFound();
+  }
 
   return (
     <div className="bg-white min-h-screen">
