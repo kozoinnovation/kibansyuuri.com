@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import Image from 'next/image';
-import { RepairCase } from '@/libs/microcms';
+import { RepairCase } from '@/lib/microcms';
 
 const RepairCard = ({ repairCase }: { repairCase: RepairCase }) => (
   <div className="bg-white rounded-lg shadow-md overflow-hidden group transition-shadow hover:shadow-xl">
