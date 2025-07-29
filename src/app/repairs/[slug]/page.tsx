@@ -18,11 +18,16 @@ type Props = {
 
 // SSG 用パスを一括生成
 export async function generateStaticParams() {
-  const { contents } = await getRepairCases({ limit: 1000 });
-  if (!contents || contents.length === 0) {
+  try {
+    const { contents } = await getRepairCases({ limit: 1000 });
+    if (!contents || contents.length === 0) {
+      return [];
+    }
+    return contents.map((post) => ({ slug: post.slug }));
+  } catch (error) {
+    console.error("Failed to generate static params:", error);
     return [];
   }
-  return contents.map((post) => ({ slug: post.slug }));
 }
 
 // ページメタデータ（SEO対応）
@@ -31,7 +36,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { contents } = await getRepairCases({ filters: `slug[equals]${slug}` });
   const post = contents?.[0];
 
-  if (!post) return { title: '修理事例 | Not Found' };
+  if (!post) {
+    return {
+      title: '修理事例 | Not Found',
+      description: '該当する修理事例は見つかりませんでした。',
+    };
+  }
   return {
     title: `${post.title} | 修理事例`,
     description: post.body?.slice(0, 120).replace(/<[^>]+>/g, '') ?? '修理事例の詳細ページです。',
