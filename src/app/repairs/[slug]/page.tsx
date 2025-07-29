@@ -1,24 +1,27 @@
 // src/app/repairs/[slug]/page.tsx
+
 import { getRepairCases } from '@/libs/microcms';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { Calendar, Tag, Folder, ArrowLeft } from 'lucide-react';
 import type { Metadata } from 'next';
-import type { RepairCase } from '@/types/repair';
 
-// ✅ SSG用パス生成
+// ✅ 静的パス生成
 export async function generateStaticParams() {
   const { contents } = await getRepairCases({ limit: 1000 });
   return contents.map((post) => ({ slug: post.slug }));
 }
 
-// ✅ SEO用メタデータ生成（型を直接記述）
+// ✅ SEOメタデータ生成（← ここが肝！ 型定義は一切外部に置かずにinline）
 export async function generateMetadata({
   params,
 }: {
   params: { slug: string };
 }): Promise<Metadata> {
-  const { contents } = await getRepairCases({ filters: `slug[equals]${params.slug}` });
+  const { contents } = await getRepairCases({
+    filters: `slug[equals]${params.slug}`,
+  });
+
   const post = contents?.[0];
   if (!post) {
     return {
@@ -26,14 +29,15 @@ export async function generateMetadata({
       description: '該当する修理事例は見つかりませんでした。',
     };
   }
+
   return {
     title: `${post.title} | 修理事例`,
     description: post.body?.slice(0, 120).replace(/<[^>]+>/g, '') ?? '',
   };
 }
 
-// ✅ 本体ページ（こちらは型定義ありでOK）
-export default async function RepairCaseDetailPage({
+// ✅ 本体ページ（こっちは PageProps 型使ってもOK）
+export default async function RepairDetailPage({
   params,
 }: {
   params: { slug: string };
@@ -43,7 +47,7 @@ export default async function RepairCaseDetailPage({
     filters: `slug[equals]${slug}`,
   });
 
-  const post = contents?.[0] as RepairCase | undefined;
+  const post = contents?.[0];
   if (!post) notFound();
 
   return (
