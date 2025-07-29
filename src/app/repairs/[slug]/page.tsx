@@ -6,10 +6,12 @@ import Image from 'next/image';
 import type { Metadata } from 'next';
 import type { RepairCase } from '@/types/repair';
 
-// --- ✅ SSG用の静的パス生成 ---
+// -----------------------------
+// SSG: パス生成
+// -----------------------------
 export async function generateStaticParams(): Promise<Array<{ slug: string }>> {
   try {
-    const { contents } = await getRepairCases({ limit: 1000 });
+    const { contents } = await getRepairCases({ limit: 100 });
     return contents.map((post) => ({ slug: post.slug }));
   } catch (error) {
     console.error("generateStaticParams error:", error);
@@ -17,15 +19,17 @@ export async function generateStaticParams(): Promise<Array<{ slug: string }>> {
   }
 }
 
-// --- ✅ SEO用メタデータ生成 ---
-// 👉 型のエクスポートを避け、propsに直接注釈するのがNext.js 15の落とし穴回避ポイント
+// -----------------------------
+// SEOメタデータ
+// -----------------------------
 export async function generateMetadata(
-  props: { params: { slug: string } }
+  { params }: { params: Promise<{ slug: string }> }
 ): Promise<Metadata> {
-  const { params } = props;
+  const resolvedParams = await params;
   const { contents } = await getRepairCases({
-    filters: `slug[equals]${params.slug}`
+    filters: `slug[equals]${resolvedParams.slug}`,
   });
+
   const post = contents?.[0];
   if (!post) {
     return {
@@ -39,23 +43,28 @@ export async function generateMetadata(
   };
 }
 
-// --- ✅ ページ本体 ---
+// -----------------------------
+// メインページ
+// -----------------------------
 export default async function RepairCaseDetailPage(
-  props: { params: { slug: string } }
+  { params }: { params: Promise<{ slug: string }> }
 ) {
-  const { params } = props;
+  const resolvedParams = await params;
   const { contents } = await getRepairCases({
-    filters: `slug[equals]${params.slug}`
+    filters: `slug[equals]${resolvedParams.slug}`,
   });
-  const post = contents?.[0] as RepairCase | undefined;
 
+  const post = contents?.[0] as RepairCase | undefined;
   if (!post) notFound();
 
   return (
     <div className="bg-white min-h-screen">
       <main className="container mx-auto px-4 py-8 sm:py-12">
         <article className="max-w-3xl mx-auto">
-          <Link href="/repairs" className="inline-flex items-center gap-2 text-blue-600 hover:underline mb-6 text-sm">
+          <Link
+            href="/repairs"
+            className="inline-flex items-center gap-2 text-blue-600 hover:underline mb-6 text-sm"
+          >
             <ArrowLeft size={16} />
             修理事例一覧へ戻る
           </Link>
@@ -89,14 +98,20 @@ export default async function RepairCaseDetailPage(
             </figure>
           )}
 
-          <div className="prose lg:prose-lg max-w-none" dangerouslySetInnerHTML={{ __html: post.body }} />
+          <div
+            className="prose lg:prose-lg max-w-none"
+            dangerouslySetInnerHTML={{ __html: post.body }}
+          />
 
           {post.tags && post.tags.length > 0 && (
             <div className="mt-8 pt-6 border-t">
               <div className="flex flex-wrap items-center gap-2">
                 <Tag size={16} className="text-gray-500" />
                 {post.tags.map((tag) => (
-                  <span key={tag.id} className="bg-gray-200 text-gray-700 text-xs font-medium px-2.5 py-1 rounded-full">
+                  <span
+                    key={tag.id}
+                    className="bg-gray-200 text-gray-700 text-xs font-medium px-2.5 py-1 rounded-full"
+                  >
                     {tag.name}
                   </span>
                 ))}
