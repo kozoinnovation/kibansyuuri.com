@@ -1,21 +1,43 @@
-// src/app/repairs/[slug]/page.tsx
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { getRepairCases } from '@/libs/microcms';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { Calendar, Tag, Folder, ArrowLeft } from 'lucide-react';
+import type { Metadata } from 'next';
 
 type Params = { slug: string };
 
-// 同期関数としてエクスポート。props:any で PageProps の制約を回避
-export default function RepairCaseDetailPageWrapper(props: any) {
-  return <RepairCaseDetailPage {...props} />;
+// ✅ 1. SSG用パスを生成（App Routerの仕様でこのファイル内に記述必須）
+export async function generateStaticParams() {
+  const { contents } = await getRepairCases({ limit: 1000 });
+
+  if (!contents || contents.length === 0) {
+    return [];
+  }
+
+  return contents.map((post) => ({
+    slug: post.slug,
+  }));
 }
 
-// 実際の非同期処理はこの内部コンポーネントで
-async function RepairCaseDetailPage({ params }: { params: Params }) {
+// ✅ 2. ページメタデータ（SEO対応したい場合はここで）
+export async function generateMetadata({ params }: { params: Params }): Promise<Metadata> {
   const { slug } = params;
+  const { contents } = await getRepairCases({ filters: `slug[equals]${slug}` });
+  const post = contents?.[0];
+
+  if (!post) return { title: '修理事例 | Not Found' };
+  return {
+    title: `${post.title} | 修理事例`,
+    description: post.body?.slice(0, 80).replace(/<[^>]+>/g, '') ?? '',
+  };
+}
+
+// ✅ 3. 通常のページコンポーネント（App Router向けにasync対応）
+export default async function RepairCaseDetailPage({ params }: { params: Params }) {
+  const { slug } = params;
+
   const { contents } = await getRepairCases({
     filters: `slug[equals]${slug}`,
   });
@@ -86,11 +108,4 @@ async function RepairCaseDetailPage({ params }: { params: Params }) {
       </main>
     </div>
   );
-}
-
-// SSG 用パスを生成
-export async function generateStaticParams() {
-  const { contents } = await getRepairCases({ limit: 100 });
-  if (!contents) return [];
-  return contents.map((post) => ({ slug: post.slug }));
 }
