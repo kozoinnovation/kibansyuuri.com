@@ -8,37 +8,43 @@ import type { RepairCase } from '@/types/repair';
 
 type Params = { slug: string };
 
-// ────────────────
-// SSG 用パスを一括生成
-// ────────────────
-export async function generateStaticParams() {
+
+// ───────────────────────────────────────
+// SSG 用の全パスを生成
+// ───────────────────────────────────────
+export async function generateStaticParams(): Promise<Params[]> {
   const { contents } = await getRepairCases({ limit: 1000 });
-  if (!contents || contents.length === 0) {
-    return [];
-  }
-  return contents.map((post) => ({ slug: post.slug }));
+  if (!contents || contents.length === 0) return [];
+  return contents.map(post => ({ slug: post.slug }));
 }
 
-// ────────────────
-// SEO 用メタデータを動的生成
-// ────────────────
-export async function generateMetadata({ params }: { params: Params }): Promise<Metadata> {
+// ───────────────────────────────────────
+// ページごとの SEO メタデータを生成
+// ───────────────────────────────────────
+export async function generateMetadata({
+  params,
+}: {
+  params: Params;
+}): Promise<Metadata> {
   const { slug } = params;
   const { contents } = await getRepairCases({ filters: `slug[equals]${slug}` });
   const post = contents?.[0];
   if (!post) {
-    return { title: '修理事例 | Not Found' };
+    return {
+      title: '修理事例 | 見つかりません',
+      description: '指定された修理事例は見つかりませんでした。',
+    };
   }
-  const description = post.body?.replace(/<[^>]+>/g, '').slice(0, 80) ?? '';
+  const descText = post.body.replace(/<[^>]+>/g, '').slice(0, 80);
   return {
     title: `${post.title} | 修理事例`,
-    description,
+    description: descText,
   };
 }
 
-// ────────────────
-// デフォルトエクスポートは「同期コンポーネント」で型を明示する
-// ────────────────
+// ───────────────────────────────────────
+// 🚀 Vercelのビルド回避のため、同期コンポーネントで export default
+// ───────────────────────────────────────
 export default function RepairCaseDetailPageWrapper({
   params,
 }: {
@@ -47,9 +53,9 @@ export default function RepairCaseDetailPageWrapper({
   return <RepairCaseDetailPage params={params} />;
 }
 
-// ────────────────
-// 非同期フェッチ&描画は内部コンポーネントで
-// ────────────────
+// ───────────────────────────────────────
+// 実際のデータ取得＆レンダリングは非同期コンポーネントで
+// ───────────────────────────────────────
 async function RepairCaseDetailPage({
   params,
 }: {
@@ -60,9 +66,7 @@ async function RepairCaseDetailPage({
     filters: `slug[equals]${slug}`,
   });
   const post = contents?.[0] as RepairCase | undefined;
-  if (!post) {
-    notFound();
-  }
+  if (!post) notFound();
 
   return (
     <div className="bg-white min-h-screen">
@@ -116,7 +120,7 @@ async function RepairCaseDetailPage({
             <div className="mt-8 pt-6 border-t">
               <div className="flex flex-wrap items-center gap-2">
                 <Tag size={16} className="text-gray-500" />
-                {post.tags.map((tag) => (
+                {post.tags.map(tag => (
                   <span
                     key={tag.id}
                     className="bg-gray-200 text-gray-700 text-xs font-medium px-2.5 py-1 rounded-full"
