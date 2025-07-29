@@ -5,14 +5,14 @@ import { useForm, UseFormRegisterReturn } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import emailjs from '@emailjs/browser';
-import { CircuitBoard, Menu, X, Loader2 } from 'lucide-react';
+import { CircuitBoard, Menu, X, Loader2, AlertCircle, CheckCircle } from 'lucide-react';
 import Link from 'next/link';
 
 // utility for Tailwind classes
 const cn = (...classes: (string | undefined | null | false)[]) =>
   classes.filter(Boolean).join(' ');
 
-// Button component with displayName
+// Button component with dark mode support
 type ButtonVariant = 'default' | 'destructive' | 'outline' | 'secondary' | 'ghost' | 'link';
 type ButtonSize = 'default' | 'sm' | 'lg' | 'icon';
 
@@ -21,24 +21,24 @@ const Button = React.forwardRef<
   React.ButtonHTMLAttributes<HTMLButtonElement> & { variant?: ButtonVariant; size?: ButtonSize }
 >(function Button({ className, variant = 'default', size = 'default', ...props }, ref) {
   const variants = {
-    default: 'bg-blue-600 text-white hover:bg-blue-600/90',
-    destructive: 'bg-red-500 text-white hover:bg-red-500/90',
-    outline: 'border border-gray-200 bg-transparent hover:bg-gray-100',
-    secondary: 'bg-gray-100 text-gray-900 hover:bg-gray-100/80',
-    ghost: 'hover:bg-gray-100',
-    link: 'text-blue-600 underline-offset-4 hover:underline',
+    default: 'bg-blue-600 text-white shadow-lg hover:bg-blue-700 transform transition-transform hover:-translate-y-1',
+    destructive: 'bg-red-500 text-white shadow-sm hover:bg-red-500/90',
+    outline: 'border border-gray-300 dark:border-gray-700 bg-transparent hover:bg-gray-100 dark:hover:bg-gray-800',
+    secondary: 'bg-gray-200 text-gray-800 hover:bg-gray-300 dark:bg-gray-800 dark:text-gray-50 dark:hover:bg-gray-700',
+    ghost: 'hover:bg-gray-100 dark:hover:bg-gray-800',
+    link: 'text-blue-600 dark:text-blue-400 underline-offset-4 hover:underline',
   };
   const sizes = {
     default: 'h-10 px-4 py-2',
     sm: 'h-9 rounded-md px-3',
-    lg: 'h-11 rounded-md px-8',
+    lg: 'h-11 rounded-lg px-8 text-base',
     icon: 'h-10 w-10',
   };
   return (
     <button
       ref={ref}
       className={cn(
-        'inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50',
+        'inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-white dark:ring-offset-black transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50',
         variants[variant],
         sizes[size],
         className
@@ -49,13 +49,14 @@ const Button = React.forwardRef<
 });
 Button.displayName = 'Button';
 
-// Input and Textarea
+// Input and Textarea with dark mode support
 const Input = React.forwardRef<HTMLInputElement, React.InputHTMLAttributes<HTMLInputElement>>(
   (props, ref) => (
     <input
       ref={ref}
       className={cn(
-        'flex h-10 w-full rounded-md border border-gray-300 bg-transparent px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 disabled:opacity-50',
+        'flex h-10 w-full rounded-md border border-gray-300 bg-transparent px-3 py-2 text-sm ring-offset-white placeholder:text-gray-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50',
+        'dark:border-gray-700 dark:bg-gray-800 dark:text-gray-50 dark:ring-offset-gray-900 dark:placeholder:text-gray-500', // Dark mode styles
         props.className
       )}
       {...props}
@@ -69,7 +70,8 @@ const Textarea = React.forwardRef<HTMLTextAreaElement, React.TextareaHTMLAttribu
     <textarea
       ref={ref}
       className={cn(
-        'flex min-h-[120px] w-full rounded-md border border-gray-300 bg-transparent px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 disabled:opacity-50',
+        'flex min-h-[120px] w-full rounded-md border border-gray-300 bg-transparent px-3 py-2 text-sm ring-offset-white placeholder:text-gray-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50',
+        'dark:border-gray-700 dark:bg-gray-800 dark:text-gray-50 dark:ring-offset-gray-900 dark:placeholder:text-gray-500', // Dark mode styles
         props.className
       )}
       {...props}
@@ -78,40 +80,42 @@ const Textarea = React.forwardRef<HTMLTextAreaElement, React.TextareaHTMLAttribu
 );
 Textarea.displayName = 'Textarea';
 
-// Header
+// Header with dark mode support
 const Header: React.FC = () => {
   const [open, setOpen] = useState(false);
   const links = [
     { name: 'ホーム', href: '/' },
-    { name: '修理事例', href: '/cases' },
+    { name: '修理事例', href: '/repairs' },
     { name: '技術コラム', href: '/blog' },
     { name: 'お問い合わせ', href: '/contact' },
   ];
   return (
-    <header className="bg-white/90 sticky top-0 z-50 border-b backdrop-blur">
-      <div className="container mx-auto flex items-center justify-between p-4">
+    <header className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-md sticky top-0 z-50 border-b dark:border-gray-800">
+      <div className="container mx-auto flex items-center justify-between h-16 px-4 sm:px-6 lg:px-8">
         <Link href="/" className="flex items-center space-x-2">
           <CircuitBoard className="h-7 w-7 text-blue-600" />
-          <span className="text-xl font-bold">基板修理.com</span>
+          <span className="text-xl font-bold text-gray-800 dark:text-gray-100">基板修理.com</span>
         </Link>
         <nav className="hidden md:flex space-x-6">
           {links.map((l) => (
-            <Link key={l.href} href={l.href} className="text-gray-500 hover:text-blue-600">
+            <Link key={l.href} href={l.href} className="text-sm font-medium text-gray-500 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
               {l.name}
             </Link>
           ))}
         </nav>
-        <Button variant="ghost" size="icon" onClick={() => setOpen(!open)}>
-          {open ? <X size={24} /> : <Menu size={24} />}
-        </Button>
+        <div className="md:hidden">
+            <Button onClick={() => setOpen(!open)} variant="ghost" size="icon">
+              {open ? <X size={24} /> : <Menu size={24} />}
+            </Button>
+        </div>
       </div>
       {open && (
-        <div className="md:hidden bg-white border-t">
+        <div className="md:hidden bg-white dark:bg-gray-900 border-t dark:border-gray-800">
           {links.map((l) => (
             <Link
               key={l.href}
               href={l.href}
-              className="block px-4 py-2 hover:bg-gray-100"
+              className="block px-4 py-3 text-base font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
               onClick={() => setOpen(false)}
             >
               {l.name}
@@ -124,10 +128,10 @@ const Header: React.FC = () => {
 };
 Header.displayName = 'Header';
 
-// Footer
+// Footer with dark mode support
 const Footer: React.FC = () => (
-  <footer className="bg-gray-50 border-t py-6 mt-12">
-    <div className="container mx-auto text-center text-sm text-gray-500">
+  <footer className="bg-gray-50 dark:bg-gray-800 border-t dark:border-gray-700 py-8 mt-16">
+    <div className="container mx-auto text-center text-sm text-gray-500 dark:text-gray-400">
       &copy; {new Date().getFullYear()} kibansyuuri.com. All Rights Reserved.
     </div>
   </footer>
@@ -139,7 +143,7 @@ const formSchema = z.object({
   name: z.string().min(1, { message: 'お名前は必須です。' }),
   phone: z
     .string()
-    .min(10)
+    .min(10, { message: '電話番号は10桁以上で入力してください。' })
     .regex(/^([0-9]{10,11})$/, { message: '電話番号の形式が正しくありません。' }),
   email: z.string().email({ message: '有効なメールアドレスを入力してください。' }),
   device: z.string().min(1, { message: '機種名は必須です。' }),
@@ -149,35 +153,26 @@ const formSchema = z.object({
 type FormValues = z.infer<typeof formSchema>;
 
 // InputGroup
-type InputGroupInputProps = {
+type InputGroupProps = {
   label: string;
-  id: string;
+  id: keyof FormValues;
   error?: string;
-  isTextarea?: false;
-} & UseFormRegisterReturn &
-  React.InputHTMLAttributes<HTMLInputElement>;
+  isTextarea?: boolean;
+  register: UseFormRegisterReturn;
+} & React.InputHTMLAttributes<HTMLInputElement | HTMLTextAreaElement>;
 
-type InputGroupTextareaProps = {
-  label: string;
-  id: string;
-  error?: string;
-  isTextarea: true;
-} & UseFormRegisterReturn &
-  React.TextareaHTMLAttributes<HTMLTextAreaElement>;
 
-type InputGroupProps = InputGroupInputProps | InputGroupTextareaProps;
-
-const InputGroup: React.FC<InputGroupProps> = ({ label, id, error, isTextarea, ...rest }) => (
+const InputGroup: React.FC<InputGroupProps> = ({ label, id, error, isTextarea, register, ...rest }) => (
   <div>
-    <label htmlFor={id} className="block text-sm font-semibold mb-1">
+    <label htmlFor={id} className="block text-sm font-semibold mb-2 text-gray-800 dark:text-gray-200">
       {label}
     </label>
     {isTextarea ? (
-      <Textarea id={id} {...(rest as React.TextareaHTMLAttributes<HTMLTextAreaElement>)} />
+      <Textarea id={id} {...register} {...(rest as React.TextareaHTMLAttributes<HTMLTextAreaElement>)} />
     ) : (
-      <Input id={id} {...(rest as React.InputHTMLAttributes<HTMLInputElement>)} />
+      <Input id={id} {...register} {...(rest as React.InputHTMLAttributes<HTMLInputElement>)} />
     )}
-    {error && <p className="mt-1 text-sm text-red-600">{error}</p>}
+    {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
   </div>
 );
 InputGroup.displayName = 'InputGroup';
@@ -211,33 +206,33 @@ const ContactForm: React.FC = () => {
   });
 
   return (
-    <div className="bg-white py-16 sm:py-24">
+    <div className="bg-white dark:bg-gray-900 py-16 sm:py-24">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="max-w-2xl mx-auto">
-          <h1 className="text-3xl font-bold text-center mb-4">お問い合わせ</h1>
-          <p className="text-center mb-6 text-gray-600">
-            修理のご相談、お見積もり依頼など、お気軽にお問い合わせください。&quot;データを残したい&quot;などのご要望もOKです。
+          <h1 className="text-3xl font-bold text-center mb-4 text-gray-900 dark:text-gray-50">お問い合わせ</h1>
+          <p className="text-center mb-8 text-gray-600 dark:text-gray-300">
+            修理のご相談、お見積もり依頼など、お気軽にお問い合わせください。
           </p>
 
           {status.status === 'success' && (
-            <div className="bg-green-50 border border-green-200 p-4 rounded mb-6">
-              <p className="text-green-800">{status.message}</p>
+            <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 p-4 rounded-lg mb-6">
+              <p className="text-green-800 dark:text-green-300 flex items-center"><CheckCircle className="w-5 h-5 mr-2" />{status.message}</p>
             </div>
           )}
           {status.status === 'error' && (
-            <div className="bg-red-50 border border-red-200 p-4 rounded mb-6">
-              <p className="text-red-800">{status.message}</p>
+            <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 p-4 rounded-lg mb-6">
+              <p className="text-red-800 dark:text-red-300 flex items-center"><AlertCircle className="w-5 h-5 mr-2" />{status.message}</p>
             </div>
           )}
 
           <form ref={formRef} onSubmit={onSubmit} className="space-y-6">
-            <InputGroup label="お名前" id="name" error={errors.name?.message} {...register('name')} />
-            <InputGroup label="電話番号" id="phone" error={errors.phone?.message} {...register('phone')} />
-            <InputGroup label="メールアドレス" id="email" error={errors.email?.message} {...register('email')} />
-            <InputGroup label="機種名" id="device" error={errors.device?.message} {...register('device')} placeholder="例: iPhone 13 Pro" />
-            <InputGroup label="故障内容・ご相談内容" id="message" isTextarea error={errors.message?.message} {...register('message')} />
+            <InputGroup label="お名前" id="name" error={errors.name?.message} register={register('name')} />
+            <InputGroup label="電話番号" id="phone" error={errors.phone?.message} register={register('phone')} />
+            <InputGroup label="メールアドレス" id="email" error={errors.email?.message} register={register('email')} />
+            <InputGroup label="機種名" id="device" error={errors.device?.message} register={register('device')} placeholder="例: iPhone 13 Pro" />
+            <InputGroup label="故障内容・ご相談内容" id="message" isTextarea error={errors.message?.message} register={register('message')} />
             <div>
-              <Button type="submit" className="w-full" disabled={status.status === 'loading'}>
+              <Button type="submit" size="lg" className="w-full" disabled={status.status === 'loading'}>
                 {status.status === 'loading' ? (
                   <>
                     <Loader2 className="animate-spin mr-2" />
@@ -250,8 +245,8 @@ const ContactForm: React.FC = () => {
             </div>
           </form>
 
-          <div className="mt-8 text-center text-sm text-gray-500">
-            <Link href="/">ホームに戻る</Link>
+          <div className="mt-8 text-center text-sm text-gray-500 dark:text-gray-400">
+            <Link href="/" className="hover:underline">ホームに戻る</Link>
           </div>
         </div>
       </div>
@@ -262,10 +257,10 @@ ContactForm.displayName = 'ContactForm';
 
 export default function ContactPage() {
   return (
-    <>
+    <div className="bg-white dark:bg-gray-900 min-h-screen">
       <Header />
       <ContactForm />
       <Footer />
-    </>
+    </div>
   );
 }
