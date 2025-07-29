@@ -6,34 +6,24 @@ import { Calendar, Tag, Folder, ArrowLeft } from 'lucide-react';
 import type { Metadata } from 'next';
 import type { RepairCase } from '@/types/repair';
 
-// ─── URL パラメータの型 ─────────────────────────
-interface Params {
-  slug: string;
-}
-
-// ─── Next.js が自動で渡す Props の型 ────────────────
-type PageProps = {
-  params: Params;
-  searchParams: Record<string, string | string[]>;
-};
-
-// ─── SSG 用パスを一括生成 ───────────────────────────────
-export async function generateStaticParams(): Promise<Params[]> {
+// ─── SSG 用パスを一括生成 ────────────────────────────
+export async function generateStaticParams() {
   const { contents } = await getRepairCases({ limit: 1000 });
   if (!contents || contents.length === 0) return [];
   return contents.map((post) => ({ slug: post.slug }));
 }
 
-// ─── SEO 用のメタデータを動的に生成 ───────────────────────
-export async function generateMetadata(
-  { params }: Pick<PageProps, 'params'>
-): Promise<Metadata> {
+// ─── SEO 用メタデータを動的に生成 ───────────────────────
+export async function generateMetadata({
+  params,
+}: {
+  params: { slug: string };
+}): Promise<Metadata> {
   const { contents } = await getRepairCases({
     filters: `slug[equals]${params.slug}`,
   });
   const post = contents?.[0];
   if (!post) return { title: '修理事例 | Not Found' };
-
   return {
     title: `${post.title} | 修理事例`,
     description:
@@ -42,15 +32,19 @@ export async function generateMetadata(
   };
 }
 
-// ─── デフォルトエクスポートのページコンポーネント ──────────────
-export default async function Page({ params }: PageProps) {
+// ─── デフォルトエクスポート：サーバーコンポーネント ────────
+export default async function Page({
+  params,
+}: {
+  params: { slug: string };
+}) {
   const { contents } = await getRepairCases({
     filters: `slug[equals]${params.slug}`,
   });
   const post = contents?.[0] as RepairCase | undefined;
   if (!post) notFound();
 
-  // ▼ ポストの tags を安全に配列化
+  // tags が undefined なら空配列に
   const tags = post.tags ?? [];
 
   return (
