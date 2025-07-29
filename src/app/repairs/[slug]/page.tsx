@@ -13,7 +13,9 @@ type Params = { slug: string };
 // ────────────────
 export async function generateStaticParams() {
   const { contents } = await getRepairCases({ limit: 1000 });
-  if (!contents || contents.length === 0) return [];
+  if (!contents || contents.length === 0) {
+    return [];
+  }
   return contents.map((post) => ({ slug: post.slug }));
 }
 
@@ -21,16 +23,13 @@ export async function generateStaticParams() {
 // SEO 用メタデータを動的生成
 // ────────────────
 export async function generateMetadata({ params }: { params: Params }): Promise<Metadata> {
-  const { contents } = await getRepairCases({
-    filters: `slug[equals]${params.slug}`,
-  });
+  const { slug } = params;
+  const { contents } = await getRepairCases({ filters: `slug[equals]${slug}` });
   const post = contents?.[0];
   if (!post) {
     return { title: '修理事例 | Not Found' };
   }
-  const description = post.body
-    ?.replace(/<[^>]+>/g, '')
-    .slice(0, 80) ?? '';
+  const description = post.body?.replace(/<[^>]+>/g, '').slice(0, 80) ?? '';
   return {
     title: `${post.title} | 修理事例`,
     description,
@@ -38,22 +37,32 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
 }
 
 // ────────────────
-// デフォルトエクスポートは「同期&any」で型をバイパス！
+// デフォルトエクスポートは「同期コンポーネント」で型を明示する
 // ────────────────
-export default function RepairCaseDetailPageWrapper(props: any) {
-  return <RepairCaseDetailPage {...props} />;
+export default function RepairCaseDetailPageWrapper({
+  params,
+}: {
+  params: Params;
+}) {
+  return <RepairCaseDetailPage params={params} />;
 }
 
 // ────────────────
 // 非同期フェッチ&描画は内部コンポーネントで
 // ────────────────
-async function RepairCaseDetailPage({ params }: { params: Params }) {
+async function RepairCaseDetailPage({
+  params,
+}: {
+  params: Params;
+}) {
   const { slug } = params;
   const { contents } = await getRepairCases({
     filters: `slug[equals]${slug}`,
   });
   const post = contents?.[0] as RepairCase | undefined;
-  if (!post) notFound();
+  if (!post) {
+    notFound();
+  }
 
   return (
     <div className="bg-white min-h-screen">
@@ -103,7 +112,7 @@ async function RepairCaseDetailPage({ params }: { params: Params }) {
             dangerouslySetInnerHTML={{ __html: post.body }}
           />
 
-          {post.tags?.length && (
+          {post.tags?.length ? (
             <div className="mt-8 pt-6 border-t">
               <div className="flex flex-wrap items-center gap-2">
                 <Tag size={16} className="text-gray-500" />
@@ -117,7 +126,7 @@ async function RepairCaseDetailPage({ params }: { params: Params }) {
                 ))}
               </div>
             </div>
-          )}
+          ) : null}
         </article>
       </main>
     </div>
