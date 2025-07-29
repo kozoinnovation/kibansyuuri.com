@@ -1,49 +1,38 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+// src/app/repairs/[slug]/page.tsx
 
 import { getRepairCases } from '@/libs/microcms';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { Calendar, Tag, Folder, ArrowLeft } from 'lucide-react';
-import type { Metadata } from 'next';
+import type { RepairCase } from '@/types/repair';
 
 type Params = { slug: string };
 
-// ✅ 1. SSG用パスを生成（App Routerの仕様でこのファイル内に記述必須）
 export async function generateStaticParams() {
   const { contents } = await getRepairCases({ limit: 1000 });
-
-  if (!contents || contents.length === 0) {
+  if (!contents) {
     return [];
   }
-
-  return contents.map((post) => ({
-    slug: post.slug,
-  }));
+  return contents.map((post) => ({ slug: post.slug }));
 }
 
-// ✅ 2. ページメタデータ（SEO対応したい場合はここで）
-export async function generateMetadata({ params }: { params: Params }): Promise<Metadata> {
-  const { slug } = params;
-  const { contents } = await getRepairCases({ filters: `slug[equals]${slug}` });
-  const post = contents?.[0];
-
-  if (!post) return { title: '修理事例 | Not Found' };
-  return {
-    title: `${post.title} | 修理事例`,
-    description: post.body?.slice(0, 80).replace(/<[^>]+>/g, '') ?? '',
-  };
+// 🚨 ここは同期関数で export default！！
+// Vercelのビルドエラーを回避するためのラッパーコンポーネント
+export default function RepairCaseDetailPageWrapper({ params }: { params: Params }) {
+  return <RepairCaseDetailPage params={params} />;
 }
 
-// ✅ 3. 通常のページコンポーネント（App Router向けにasync対応）
-export default async function RepairCaseDetailPage({ params }: { params: Params }) {
+// 🚀 非同期処理はラップされたこのコンポーネントで行う
+async function RepairCaseDetailPage({ params }: { params: Params }) {
   const { slug } = params;
-
   const { contents } = await getRepairCases({
     filters: `slug[equals]${slug}`,
   });
 
   const post = contents?.[0];
-  if (!post) notFound();
+  if (!post) {
+    notFound();
+  }
 
   return (
     <div className="bg-white min-h-screen">
@@ -74,15 +63,17 @@ export default async function RepairCaseDetailPage({ params }: { params: Params 
             )}
           </div>
 
-          <figure className="mb-8">
-            <img
-              src={`${post.image.url}?w=800&auto=format`}
-              alt={post.title}
-              width={800}
-              height={450}
-              className="w-full rounded-lg shadow-md object-cover"
-            />
-          </figure>
+          {post.image && (
+            <figure className="mb-8">
+              <img
+                src={`${post.image.url}?w=800&auto=format`}
+                alt={post.title}
+                width={800}
+                height={450}
+                className="w-full rounded-lg shadow-md object-cover"
+              />
+            </figure>
+          )}
 
           <div
             className="prose lg:prose-lg max-w-none"
