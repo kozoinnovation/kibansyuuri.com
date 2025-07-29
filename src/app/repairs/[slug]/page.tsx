@@ -6,47 +6,51 @@ import { Calendar, Tag, Folder, ArrowLeft } from 'lucide-react';
 import type { Metadata } from 'next';
 import type { RepairCase } from '@/types/repair';
 
-// ─── SSG 用パスを一括生成 ────────────────────────────
+// Next.js App Routerがページコンポーネントに渡すpropsの型を、規約に合わせて明示的に定義
+type Props = {
+  params: {
+    slug: string;
+  };
+  searchParams?: {
+    [key: string]: string | string[] | undefined;
+  };
+};
+
+// SSG 用パスを一括生成
 export async function generateStaticParams() {
   const { contents } = await getRepairCases({ limit: 1000 });
-  if (!contents || contents.length === 0) return [];
+  if (!contents || contents.length === 0) {
+    return [];
+  }
   return contents.map((post) => ({ slug: post.slug }));
 }
 
-// ─── SEO 用メタデータを動的に生成 ───────────────────────
-export async function generateMetadata({
-  params,
-}: {
-  params: { slug: string };
-}): Promise<Metadata> {
-  const { contents } = await getRepairCases({
-    filters: `slug[equals]${params.slug}`,
-  });
+// ページメタデータ（SEO対応）
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { slug } = params;
+  const { contents } = await getRepairCases({ filters: `slug[equals]${slug}` });
   const post = contents?.[0];
+
   if (!post) return { title: '修理事例 | Not Found' };
   return {
     title: `${post.title} | 修理事例`,
-    description:
-      post.body?.slice(0, 120).replace(/<[^>]+>/g, '') ||
-      '修理事例の詳細ページです。',
+    description: post.body?.slice(0, 120).replace(/<[^>]+>/g, '') ?? '修理事例の詳細ページです。',
   };
 }
 
-// ─── デフォルトエクスポート：サーバーコンポーネント ────────
-// props を any で受けることで Next.js の内部型制約をバイパス
-export default async function Page(
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  props: any
-) {
-  const slug: string = props.params.slug;
+// ───────────────────────────────────────
+// ✅ 最終修正：ラッパーを廃止し、単一のasyncサーバーコンポーネントとして定義
+// ───────────────────────────────────────
+export default async function RepairCaseDetailPage({ params }: Props) {
+  const { slug } = params;
   const { contents } = await getRepairCases({
     filters: `slug[equals]${slug}`,
   });
-  const post = contents?.[0] as RepairCase | undefined;
-  if (!post) notFound();
 
-  // tags が undefined の場合は空配列に
-  const tags = post.tags ?? [];
+  const post = contents?.[0] as RepairCase | undefined;
+  if (!post) {
+    notFound();
+  }
 
   return (
     <div className="bg-white min-h-screen">
@@ -96,11 +100,11 @@ export default async function Page(
             dangerouslySetInnerHTML={{ __html: post.body }}
           />
 
-          {tags.length > 0 && (
+          {post.tags && post.tags.length > 0 && (
             <div className="mt-8 pt-6 border-t">
               <div className="flex flex-wrap items-center gap-2">
                 <Tag size={16} className="text-gray-500" />
-                {tags.map((tag) => (
+                {post.tags.map((tag) => (
                   <span
                     key={tag.id}
                     className="bg-gray-200 text-gray-700 text-xs font-medium px-2.5 py-1 rounded-full"
