@@ -35,8 +35,9 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
 }
 
 // ─── Vercel のビルドエラー回避のための同期ラッパー ───
-export default function RepairCaseDetailPageWrapper({ params }: { params: Params }) {
-  return <RepairCaseDetailPage params={params} />;
+// props:any で丸ごと受ければ PageProps 制約に引っかからない
+export default function RepairCaseDetailPageWrapper(props: any) {
+  return <RepairCaseDetailPage {...props} />;
 }
 
 // ─── 実際のフェッチ＆レンダリングは非同期コンポーネント ──
@@ -46,9 +47,7 @@ async function RepairCaseDetailPage({ params }: { params: Params }) {
     filters: `slug[equals]${slug}`,
   });
   const post = contents?.[0] as RepairCase | undefined;
-  if (!post) {
-    notFound();
-  }
+  if (!post) notFound();
 
   return (
     <div className="bg-white min-h-screen">
