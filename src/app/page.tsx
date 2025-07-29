@@ -1,7 +1,7 @@
 'use client'; // Next.js App Routerでは、useStateなどを使うクライアントコンポーネントにこれが必要です
 
 import React, { useState } from 'react';
-import Link from 'next/link';
+// import Link from 'next/link'; // プレビュー環境でエラーになるため、aタグを使用します
 import {
   CircuitBoard,
   Cpu,
@@ -26,8 +26,6 @@ type ButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
 
 type CardProps = React.HTMLAttributes<HTMLDivElement>;
 type CardHeaderProps = React.HTMLAttributes<HTMLDivElement>;
-type CardTitleProps = React.HTMLAttributes<HTMLHeadingElement>;
-type CardDescriptionProps = React.HTMLAttributes<HTMLParagraphElement>;
 type CardContentProps = React.HTMLAttributes<HTMLDivElement>;
 type CardFooterProps = React.HTMLAttributes<HTMLDivElement>;
 
@@ -49,7 +47,7 @@ const cn = (...classes: (string | undefined | null | false)[]) =>
 
 // Buttonコンポーネント
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ className, variant = 'default', size = 'default', ...props }, ref) => {
+  function Button({ className, variant = 'default', size = 'default', ...props }, ref) {
     const variants = {
       default: "bg-blue-600 text-white hover:bg-blue-600/90",
       destructive: "bg-red-500 text-white hover:bg-red-500/90",
@@ -78,38 +76,31 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     );
   }
 );
-Button.displayName = 'Button';
 
 // Cardコンポーネント
-const Card: React.FC<CardProps> = ({ className, children, ...props }) => (
+const Card = ({ className, children, ...props }: CardProps) => (
   <div className={cn("rounded-xl border bg-white text-gray-900 shadow-sm", className)} {...props}>
     {children}
   </div>
 );
-const CardHeader: React.FC<CardHeaderProps> = ({ className, children, ...props }) => (
+const CardHeader = ({ className, children, ...props }: CardHeaderProps) => (
   <div className={cn("flex flex-col space-y-1.5 p-6", className)} {...props}>{children}</div>
 );
-const CardTitle: React.FC<CardTitleProps> = ({ className, children, ...props }) => (
-  <h3 className={cn("text-2xl font-semibold leading-none tracking-tight", className)} {...props}>{children}</h3>
-);
-const CardDescription: React.FC<CardDescriptionProps> = ({ className, children, ...props }) => (
-  <p className={cn("text-sm text-gray-500", className)} {...props}>{children}</p>
-);
-const CardContent: React.FC<CardContentProps> = ({ className, children, ...props }) => (
+const CardContent = ({ className, children, ...props }: CardContentProps) => (
   <div className={cn("p-6 pt-0", className)} {...props}>{children}</div>
 );
-const CardFooter: React.FC<CardFooterProps> = ({ className, children, ...props }) => (
+const CardFooter = ({ className, children, ...props }: CardFooterProps) => (
   <div className={cn("flex items-center p-6 pt-0", className)} {...props}>{children}</div>
 );
 
 // --- ページセクションコンポーネント ---
 
 // Headerコンポーネント
-const Header: React.FC = () => {
+const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const navLinks = [
     { name: "サービス", href: "#features" },
-    { name: "修理事例", href: "/cases" },
+    { name: "修理事例", href: "/repairs" },
     { name: "技術コラム", href: "/blog" },
     { name: "お問い合わせ", href: "/contact" },
   ];
@@ -118,15 +109,15 @@ const Header: React.FC = () => {
     <header className="bg-white/90 backdrop-blur-md sticky top-0 z-50 border-b">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
-          <Link href="/" className="flex items-center space-x-2">
+          <a href="/" className="flex items-center space-x-2">
             <CircuitBoard className="h-7 w-7 text-blue-600" />
             <span className="text-xl font-bold text-gray-800">基板修理.com</span>
-          </Link>
+          </a>
           <nav className="hidden md:flex items-center space-x-6">
             {navLinks.map((link) => (
-              <Link key={link.name} href={link.href} className="text-sm font-medium text-gray-500 hover:text-blue-600 transition-colors">
+              <a key={link.name} href={link.href} className="text-sm font-medium text-gray-500 hover:text-blue-600 transition-colors">
                 {link.name}
-              </Link>
+              </a>
             ))}
           </nav>
           <div className="hidden md:block">
@@ -145,12 +136,12 @@ const Header: React.FC = () => {
         <div className="md:hidden bg-white border-t">
           <nav className="flex flex-col px-4 pt-2 pb-4 space-y-1">
             {navLinks.map((link) => (
-              <Link key={link.name} href={link.href}
+              <a key={link.name} href={link.href}
                 className="px-3 py-2 rounded-md text-base font-medium text-gray-600 hover:bg-gray-100 hover:text-blue-600"
                 onClick={() => setIsMenuOpen(false)}
               >
                 {link.name}
-              </Link>
+              </a>
             ))}
             <Button onClick={() => window.location.href = '/contact'} className="w-full mt-2">
               無料相談・お見積もり
@@ -163,7 +154,7 @@ const Header: React.FC = () => {
 };
 
 // Heroコンポーネント
-const Hero: React.FC = () => (
+const Hero = () => (
   <section className="bg-white">
     <div className="container mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-20 text-center">
       <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold text-gray-900 tracking-tight">
@@ -186,7 +177,7 @@ const Hero: React.FC = () => (
 );
 
 // Featuresコンポーネント
-const Features: React.FC = () => {
+const Features = () => {
   const features: Feature[] = [
     { icon: PowerOff, title: "起動しない", description: "突然電源が入らなくなった、充電しても反応がない端末を復旧させます。" },
     { icon: Droplets, title: "水没してしまった", description: "お風呂や海で水没した端末から、写真や連絡先を救出します。" },
@@ -222,22 +213,22 @@ const Features: React.FC = () => {
 };
 
 // Testimonialsコンポーネント
-const Testimonials: React.FC = () => {
+const Testimonials = () => {
   const testimonials: Testimonial[] = [
     {
       quote: "リンゴループで完全に諦めていたiPhoneから、子供の写真データが全て戻ってきました。本当に感謝しています。",
       name: "佐藤様",
-      device: "iPhone 12 Pro"
+      device: "iPhone 12 Pro"
     },
     {
       quote: "別の修理店では基板交換で高額になると言われましたが、こちらでは安く修理していただき、データもそのままでした。",
       name: "鈴木様",
-      device: "iPhone SE2"
+      device: "iPhone SE2"
     },
     {
       quote: "水没させてしまい電源が入らなくなったスマホ。LINEの履歴も復元できて、仕事に支障が出ずに済みました。",
       name: "高橋様",
-      device: "iPhone 13 mini"
+      device: "iPhone 13 mini"
     },
   ];
 
@@ -257,7 +248,7 @@ const Testimonials: React.FC = () => {
                     <Star key={i} className="h-5 w-5 text-yellow-400 fill-yellow-400" />
                   ))}
                 </div>
-                <p className="text-gray-700">&quot;{item.quote}&quot;</p>
+                <p className="text-gray-700">"{item.quote}"</p>
               </CardContent>
               <CardFooter>
                 <p className="text-sm font-semibold text-gray-900">
@@ -268,7 +259,7 @@ const Testimonials: React.FC = () => {
           ))}
         </div>
         <div className="text-center mt-12">
-          <Button variant="outline" onClick={() => window.location.href = '/cases'}>
+          <Button variant="outline" onClick={() => window.location.href = '/repairs'}>
             すべての修理事例を見る <ChevronRight className="ml-2 h-4 w-4" />
           </Button>
         </div>
@@ -278,7 +269,7 @@ const Testimonials: React.FC = () => {
 };
 
 // CTAコンポーネント
-const CTA: React.FC = () => (
+const CTA = () => (
   <section className="bg-gray-900">
     <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-20">
       <div className="max-w-2xl mx-auto text-center">
@@ -297,15 +288,15 @@ const CTA: React.FC = () => (
 );
 
 // Footerコンポーネント
-const Footer: React.FC = () => (
+const Footer = () => (
   <footer className="bg-gray-50 border-t">
     <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
       <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
         <div className="col-span-2 md:col-span-1">
-          <Link href="/" className="flex items-center space-x-2">
+          <a href="/" className="flex items-center space-x-2">
             <CircuitBoard className="h-7 w-7 text-blue-600" />
             <span className="text-xl font-bold text-gray-800">基板修理.com</span>
-          </Link>
+          </a>
           <p className="mt-4 text-sm text-gray-500">
             iPhone・スマホの基板修理とデータ復旧の専門サービス。
           </p>
@@ -313,18 +304,18 @@ const Footer: React.FC = () => (
         <div>
           <h3 className="text-sm font-semibold text-gray-900">サイトマップ</h3>
           <ul className="mt-4 space-y-2">
-            <li><Link href="#features" className="text-sm text-gray-500 hover:text-gray-900">サービス</Link></li>
-            <li><Link href="/cases" className="text-sm text-gray-500 hover:text-gray-900">修理事例</Link></li>
-            <li><Link href="/blog" className="text-sm text-gray-500 hover:text-gray-900">技術コラム</Link></li>
-            <li><Link href="/contact" className="text-sm text-gray-500 hover:text-gray-900">お問い合わせ</Link></li>
+            <li><a href="#features" className="text-sm text-gray-500 hover:text-gray-900">サービス</a></li>
+            <li><a href="/repairs" className="text-sm text-gray-500 hover:text-gray-900">修理事例</a></li>
+            <li><a href="/blog" className="text-sm text-gray-500 hover:text-gray-900">技術コラム</a></li>
+            <li><a href="/contact" className="text-sm text-gray-500 hover:text-gray-900">お問い合わせ</a></li>
           </ul>
         </div>
         <div>
           <h3 className="text-sm font-semibold text-gray-900">サポート</h3>
           <ul className="mt-4 space-y-2">
-            <li><Link href="#" className="text-sm text-gray-500 hover:text-gray-900">運営会社</Link></li>
-            <li><Link href="#" className="text-sm text-gray-500 hover:text-gray-900">プライバシーポリシー</Link></li>
-            <li><Link href="#" className="text-sm text-gray-500 hover:text-gray-900">特定商取引法に基づく表記</Link></li>
+            <li><a href="#" className="text-sm text-gray-500 hover:text-gray-900">運営会社</a></li>
+            <li><a href="#" className="text-sm text-gray-500 hover:text-gray-900">プライバシーポリシー</a></li>
+            <li><a href="#" className="text-sm text-gray-500 hover:text-gray-900">特定商取引法に基づく表記</a></li>
           </ul>
         </div>
       </div>
