@@ -11,9 +11,7 @@ import type { RepairCase } from '@/types/repair'
 // ───────────────────────────────────────────
 export async function generateStaticParams() {
   const { contents } = await getRepairCases({ limit: 1000 })
-  if (!contents || contents.length === 0) {
-    return []
-  }
+  if (!contents || contents.length === 0) return []
   return contents.map((post) => ({ slug: post.slug }))
 }
 
@@ -29,9 +27,7 @@ export async function generateMetadata({
     filters: `slug[equals]${slug}`,
   })
   const post = contents?.[0]
-  if (!post) {
-    return { title: '修理事例 | Not Found' }
-  }
+  if (!post) return { title: '修理事例 | Not Found' }
   return {
     title: `${post.title} | 修理事例`,
     description:
@@ -44,10 +40,11 @@ export async function generateMetadata({
 // デフォルトエクスポートの async サーバーコンポーネント
 // ───────────────────────────────────────────
 export default async function RepairCaseDetailPage({
-  params: { slug },
+  params,
 }: {
   params: { slug: string }
 }) {
+  const { slug } = params
   const { contents } = await getRepairCases({
     filters: `slug[equals]${slug}`,
   })
