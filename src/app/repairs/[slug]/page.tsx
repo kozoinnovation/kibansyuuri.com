@@ -1,17 +1,12 @@
 // src/app/repairs/[slug]/page.tsx
+
 import { getRepairCases } from '@/libs/microcms';
 import { notFound } from 'next/navigation';
-import Link from 'next/link';
+import Link from 'next/link'; // Linkコンポーネントをインポート
 import { Calendar, Tag, Folder, ArrowLeft } from 'lucide-react';
 
-interface PageProps {
-  params: {
-    slug: string;
-  };
-}
-
-// 修正済み！戻り値の型は Promise<{ slug: string }[]>
-export async function generateStaticParams(): Promise<{ slug: string }[]> {
+// generateStaticParams: 型定義は引数に直接書くのが安全です
+export async function generateStaticParams() {
   const { contents } = await getRepairCases({ limit: 1000 });
 
   return contents.map((post) => ({
@@ -19,14 +14,19 @@ export async function generateStaticParams(): Promise<{ slug: string }[]> {
   }));
 }
 
-export default async function RepairCaseDetailPage({ params }: PageProps) {
+// ページ関数：paramsの型を直書きして、型の問題を完全に回避します
+export default async function RepairCaseDetailPage({
+  params,
+}: {
+  params: { slug: string };
+}) {
   const { slug } = params;
 
   const { contents } = await getRepairCases({
     filters: `slug[equals]${slug}`,
   });
 
-  if (contents.length === 0) {
+  if (!contents || contents.length === 0) {
     notFound();
   }
 
@@ -36,10 +36,8 @@ export default async function RepairCaseDetailPage({ params }: PageProps) {
     <div className="bg-white min-h-screen">
       <main className="container mx-auto px-4 py-8 sm:py-12">
         <article className="max-w-3xl mx-auto">
-          <Link
-            href="/repairs"
-            className="inline-flex items-center gap-2 text-blue-600 hover:underline mb-6 text-sm"
-          >
+          {/* <a>タグを<Link>コンポーネントに修正 */}
+          <Link href="/repairs" className="inline-flex items-center gap-2 text-blue-600 hover:underline mb-6 text-sm">
             <ArrowLeft size={16} />
             修理事例一覧へ戻る
           </Link>
@@ -73,18 +71,17 @@ export default async function RepairCaseDetailPage({ params }: PageProps) {
 
           <div
             className="prose lg:prose-lg max-w-none"
-            dangerouslySetInnerHTML={{ __html: post.body }}
+            dangerouslySetInnerHTML={{
+              __html: post.body,
+            }}
           />
 
-          {post.tags?.length > 0 && (
+          {post.tags && post.tags.length > 0 && (
             <div className="mt-8 pt-6 border-t">
               <div className="flex flex-wrap items-center gap-2">
                 <Tag size={16} className="text-gray-500" />
                 {post.tags.map((tag) => (
-                  <span
-                    key={tag.id}
-                    className="bg-gray-200 text-gray-700 text-xs font-medium px-2.5 py-1 rounded-full"
-                  >
+                  <span key={tag.id} className="bg-gray-200 text-gray-700 text-xs font-medium px-2.5 py-1 rounded-full">
                     {tag.name}
                   </span>
                 ))}

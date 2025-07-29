@@ -23,7 +23,6 @@ type ButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
   variant?: 'default' | 'destructive' | 'outline' | 'secondary' | 'ghost' | 'link';
   size?: 'default' | 'sm' | 'lg' | 'icon';
 };
-
 type CardProps = React.HTMLAttributes<HTMLDivElement>;
 type CardHeaderProps = React.HTMLAttributes<HTMLDivElement>;
 type CardContentProps = React.HTMLAttributes<HTMLDivElement>;
