@@ -1,56 +1,30 @@
-// src/app/repairs/[slug]/page.tsx
-
+// 修理事例詳細ページ（page.tsx）
 import { getRepairCases } from '@/libs/microcms';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { Calendar, Tag, Folder, ArrowLeft } from 'lucide-react';
 
-// 型定義をコンポーネントの外で明確に行うことで、Vercelビルド時の型の誤解釈を防ぎます
-type Props = {
-  params: {
-    slug: string;
-  };
-};
+type Params = { slug: string };
 
-// generateStaticParams: Vercelで確実に型が解決されるように、よりシンプルな書き方に修正
 export async function generateStaticParams() {
-  try {
-    const { contents } = await getRepairCases({ limit: 1000 });
-    if (!contents) {
-      return [];
-    }
-    return contents.map((post) => ({
-      slug: post.slug,
-    }));
-  } catch (error) {
-    console.error("Failed to generate static params:", error);
-    return [];
-  }
+  const { contents } = await getRepairCases({ limit: 1000 });
+  return contents.map((post) => ({ slug: post.slug }));
 }
 
-// ページコンポーネント: propsの型を上で定義した`Props`で指定します
-export default async function RepairCaseDetailPage({ params }: Props) {
+// ここが重要！ asyncではなく、通常関数で export default
+export default function RepairCaseDetailPageWrapper({ params }: { params: Params }) {
+  return <RepairCaseDetailPage params={params} />;
+}
+
+// async 処理はラップ内でやる
+async function RepairCaseDetailPage({ params }: { params: Params }) {
   const { slug } = params;
-  let post;
+  const { contents } = await getRepairCases({
+    filters: `slug[equals]${slug}`,
+  });
 
-  try {
-    const { contents } = await getRepairCases({
-      filters: `slug[equals]${slug}`,
-    });
-
-    if (!contents || contents.length === 0) {
-      notFound();
-    }
-    post = contents[0];
-  } catch (error) {
-    console.error("Failed to fetch post details:", error);
-    notFound();
-  }
-  
-  // postが取得できなかった場合の最終防衛ライン
-  if (!post) {
-    notFound();
-  }
+  const post = contents?.[0];
+  if (!post) notFound();
 
   return (
     <div className="bg-white min-h-screen">
