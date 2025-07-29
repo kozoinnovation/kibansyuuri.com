@@ -21,7 +21,8 @@
       {
         "name": "next"
       }
-    ]
+    ],
+    "types": ["next", "node"]
   },
   "include": [
     "next-env.d.ts",

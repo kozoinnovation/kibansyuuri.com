@@ -1,82 +1,113 @@
 // src/app/repairs/[slug]/page.tsx
-import { notFound } from 'next/navigation'
-import { client } from '@/libs/client'
-import type { Repair } from '@/types/repair'
-import type { Metadata } from 'next'
+import { getRepairCases } from '@/libs/microcms';
+import { notFound } from 'next/navigation';
+import Link from 'next/link';
+import { Calendar, Tag, Folder, ArrowLeft } from 'lucide-react';
+import type { Metadata } from 'next';
 
-type Params = { slug: string }
-
-// 1) SSG 用パスを生成
-export async function generateStaticParams(): Promise<Params[]> {
-  const res = await client.getList<Repair>({
-    endpoint: 'repairs',
-    queries: { limit: 1000 },
-  })
-  return res.contents.map((item) => ({ slug: item.id }))
+// SSG 用の静的パスを生成
+export async function generateStaticParams() {
+  const { contents } = await getRepairCases({ limit: 1000 });
+  return contents.map(post => ({ slug: post.slug }));
 }
 
-// 2) ページメタデータを生成
-export async function generateMetadata({
-  params,
-}: {
-  params: Params
-}): Promise<Metadata> {
-  try {
-    const data = await client.get<Repair>({
-      endpoint: 'repairs',
-      contentId: params.slug,
-    })
-    return {
-      title: data.title,
-      description:
-        data.content
-          .slice(0, 120)
-          .replace(/<[^>]+>/g, '') ?? '修理事例の詳細ページです。',
-    }
-  } catch {
+// SEO メタデータ生成（Props はすべて inline 定義）
+export async function generateMetadata(
+  { params }: { params: { slug: string } }
+): Promise<Metadata> {
+  const { contents } = await getRepairCases({
+    filters: `slug[equals]${params.slug}`,
+  });
+  const post = contents?.[0];
+  if (!post) {
     return {
       title: '修理事例 | Not Found',
       description: '該当する修理事例は見つかりませんでした。',
-    }
+    };
   }
+  return {
+    title: `${post.title} | 修理事例`,
+    description:
+      post.body?.slice(0, 120).replace(/<[^>]+>/g, '') ??
+      '修理事例の詳細ページです。',
+  };
 }
 
-// 3) デフォルトエクスポートは必ず「Page」という名前で
-export default async function Page({
-  params,
-  searchParams,
-}: {
-  params: Params
-  searchParams?: { [key: string]: string | string[] | undefined }
-}) {
-  const data = await client.get<Repair>({
-    endpoint: 'repairs',
-    contentId: params.slug,
-  })
-  if (!data) return notFound()
+// ページ本体コンポーネント（こちらも Props は inline）
+export default async function RepairDetailPage(
+  { params }: { params: { slug: string } }
+) {
+  const { contents } = await getRepairCases({
+    filters: `slug[equals]${params.slug}`,
+  });
+  const post = contents?.[0];
+  if (!post) notFound();
 
   return (
-    <article className="prose prose-lg max-w-4xl mx-auto px-4 py-12">
-      <h1 className="text-3xl font-bold mb-4">{data.title}</h1>
+    <div className="bg-white min-h-screen">
+      <main className="container mx-auto px-4 py-8 sm:py-12">
+        <article className="max-w-3xl mx-auto">
+          <Link
+            href="/repairs"
+            className="inline-flex items-center gap-2 text-blue-600 hover:underline mb-6 text-sm"
+          >
+            <ArrowLeft size={16} />
+            修理事例一覧へ戻る
+          </Link>
 
-      {data.image?.url && (
-        <img
-          src={data.image.url}
-          width={data.image.width}
-          height={data.image.height}
-          alt={data.title}
-        />
-      )}
+          <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4 leading-tight">
+            {post.title}
+          </h1>
 
-      <div
-        className="mt-8"
-        dangerouslySetInnerHTML={{ __html: data.content }}
-      />
+          <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-gray-500 mb-6 border-b pb-4">
+            <div className="flex items-center gap-1.5">
+              <Calendar size={14} />
+              <span>
+                {new Date(post.publishedAt).toLocaleDateString('ja-JP')}
+              </span>
+            </div>
+            {post.category && (
+              <div className="flex items-center gap-1.5">
+                <Folder size={14} />
+                <span>{post.category.name}</span>
+              </div>
+            )}
+          </div>
 
-      <p className="text-sm text-gray-500 mt-6">
-        公開日:{' '}
-        {new Date(data.publishedAt).toLocaleDateString('ja-JP')}
-      </p>
-    </article>
-  )
+          {post.image && (
+            <figure className="mb-8">
+              <img
+                src={`${post.image.url}?w=800&auto=format`}
+                alt={post.title}
+                width={800}
+                height={450}
+                className="w-full rounded-lg shadow-md object-cover"
+              />
+            </figure>
+          )}
+
+          <div
+            className="prose lg:prose-lg max-w-none"
+            dangerouslySetInnerHTML={{ __html: post.body }}
+          />
+
+          {post.tags && post.tags.length > 0 && (
+            <div className="mt-8 pt-6 border-t">
+              <div className="flex flex-wrap items-center gap-2">
+                <Tag size={16} className="text-gray-500" />
+                {post.tags.map(tag => (
+                  <span
+                    key={tag.id}
+                    className="bg-gray-200 text-gray-700 text-xs font-medium px-2.5 py-1 rounded-full"
+                  >
+                    {tag.name}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+        </article>
+      </main>
+    </div>
+  );
 }
