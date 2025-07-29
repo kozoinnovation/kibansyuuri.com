@@ -1,66 +1,58 @@
 // src/app/repairs/[slug]/page.tsx
-import type { Metadata } from 'next';
 import { getRepairCases } from '@/libs/microcms';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { Calendar, Tag, Folder, ArrowLeft } from 'lucide-react';
+import type { Metadata } from 'next';
 import type { RepairCase } from '@/types/repair';
 
-type Params = { slug: string };
+// Next.js App Router がページコンポーネントに渡す props の型定義
+type PageProps = {
+  params: {
+    slug: string;
+  };
+  searchParams?: {
+    [key: string]: string | string[] | undefined;
+  };
+};
 
-// ── 1) SSG 用パスを一括生成 ───────────────────────────
-export async function generateStaticParams(): Promise<Params[]> {
+// SSG 用パスを一括生成
+export async function generateStaticParams() {
   const { contents } = await getRepairCases({ limit: 1000 });
-  if (!contents || contents.length === 0) return [];
+  if (!contents || contents.length === 0) {
+    return [];
+  }
   return contents.map((post) => ({ slug: post.slug }));
 }
 
-// ── 2) SEOメタデータ生成 ───────────────────────────────
-export async function generateMetadata({
-  params,
-}: {
-  params: Params;
-}): Promise<Metadata> {
-  const { contents } = await getRepairCases({
-    filters: `slug[equals]${params.slug}`,
-  });
+// ページメタデータ（SEO対応）
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { slug } = params;
+  const { contents } = await getRepairCases({ filters: `slug[equals]${slug}` });
   const post = contents?.[0];
+
   if (!post) {
-    return {
-      title: '修理事例 | Not Found',
-      description: 'お探しの修理事例は見つかりませんでした。',
-    };
+    return { title: '修理事例 | Not Found' };
   }
-  const plain = post.body?.replace(/<[^>]+>/g, '') ?? '';
   return {
     title: `${post.title} | 修理事例`,
-    description: plain.slice(0, 120),
+    description: post.body?.slice(0, 120).replace(/<[^>]+>/g, '') ?? '修理事例の詳細ページです。',
   };
 }
 
-// ── 3) デフォルトエクスポートは同期ラッパー ───────────────
-export default function RepairCaseDetailPageWrapper({
-  params,
-  searchParams,
-}: {
-  params: Params;
-  searchParams?: Record<string, string | string[] | undefined>;
-}) {
-  // 非同期コンポーネントを呼び出す
-  return <RepairCaseDetailPage params={params} />;
-}
-
-// ── 4) 実際のフェッチ／描画は async コンポーネント ──────────
-async function RepairCaseDetailPage({
-  params,
-}: {
-  params: Params;
-}) {
+// ───────────────────────────────────────
+// ✅ 最終修正：ラッパーを廃止し、単一の async サーバーコンポーネントとして定義
+// ───────────────────────────────────────
+export default async function RepairCaseDetailPage({ params }: PageProps) {
+  const { slug } = params;
   const { contents } = await getRepairCases({
-    filters: `slug[equals]${params.slug}`,
+    filters: `slug[equals]${slug}`,
   });
+
   const post = contents?.[0] as RepairCase | undefined;
-  if (!post) notFound();
+  if (!post) {
+    notFound();
+  }
 
   return (
     <div className="bg-white min-h-screen">
@@ -93,7 +85,7 @@ async function RepairCaseDetailPage({
             )}
           </div>
 
-          {post.image?.url && (
+          {post.image && (
             <figure className="mb-8">
               <img
                 src={`${post.image.url}?w=800&auto=format`}
@@ -107,10 +99,10 @@ async function RepairCaseDetailPage({
 
           <div
             className="prose lg:prose-lg max-w-none"
-            dangerouslySetInnerHTML={{ __html: post.body ?? '' }}
+            dangerouslySetInnerHTML={{ __html: post.body }}
           />
 
-          {post.tags?.length ? (
+          {post.tags && post.tags.length > 0 && (
             <div className="mt-8 pt-6 border-t">
               <div className="flex flex-wrap items-center gap-2">
                 <Tag size={16} className="text-gray-500" />
@@ -124,7 +116,7 @@ async function RepairCaseDetailPage({
                 ))}
               </div>
             </div>
-          ) : null}
+          )}
         </article>
       </main>
     </div>
