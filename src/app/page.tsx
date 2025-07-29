@@ -1,7 +1,7 @@
-'use client'; // Next.js App Routerでは、useStateなどを使うクライアントコンポーネントにこれが必要です
+'use client'; 
 
 import React, { useState } from 'react';
-// import Link from 'next/link'; // プレビュー環境でエラーになるため、aタグを使用します
+import Link from 'next/link'; // aタグの代わりにNext.jsのLinkコンポーネントを使用
 import {
   CircuitBoard,
   Cpu,
@@ -41,11 +41,9 @@ interface Testimonial {
   device: string;
 }
 
-// --- 共通UIコンポーネント (shadcn/ui風) ---
-const cn = (...classes: (string | undefined | null | false)[]) =>
-  classes.filter(Boolean).join(' ');
+// --- 共通UIコンポーネント ---
+const cn = (...classes: (string | undefined | null | false)[]) => classes.filter(Boolean).join(' ');
 
-// Buttonコンポーネント
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   function Button({ className, variant = 'default', size = 'default', ...props }, ref) {
     const variants = {
@@ -77,7 +75,6 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   }
 );
 
-// Cardコンポーネント
 const Card = ({ className, children, ...props }: CardProps) => (
   <div className={cn("rounded-xl border bg-white text-gray-900 shadow-sm", className)} {...props}>
     {children}
@@ -95,12 +92,11 @@ const CardFooter = ({ className, children, ...props }: CardFooterProps) => (
 
 // --- ページセクションコンポーネント ---
 
-// Headerコンポーネント
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const navLinks = [
     { name: "サービス", href: "#features" },
-    { name: "修理事例", href: "/repairs" },
+    { name: "修理事例", href: "/repairs" }, // リンクを/repairsに修正
     { name: "技術コラム", href: "/blog" },
     { name: "お問い合わせ", href: "/contact" },
   ];
@@ -109,21 +105,21 @@ const Header = () => {
     <header className="bg-white/90 backdrop-blur-md sticky top-0 z-50 border-b">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
-          <a href="/" className="flex items-center space-x-2">
+          <Link href="/" className="flex items-center space-x-2">
             <CircuitBoard className="h-7 w-7 text-blue-600" />
             <span className="text-xl font-bold text-gray-800">基板修理.com</span>
-          </a>
+          </Link>
           <nav className="hidden md:flex items-center space-x-6">
             {navLinks.map((link) => (
-              <a key={link.name} href={link.href} className="text-sm font-medium text-gray-500 hover:text-blue-600 transition-colors">
+              <Link key={link.name} href={link.href} className="text-sm font-medium text-gray-500 hover:text-blue-600 transition-colors">
                 {link.name}
-              </a>
+              </Link>
             ))}
           </nav>
           <div className="hidden md:block">
-            <Button onClick={() => window.location.href = '/contact'}>
-              無料相談・お見積もり
-            </Button>
+            <Link href="/contact">
+              <Button>無料相談・お見積もり</Button>
+            </Link>
           </div>
           <div className="md:hidden">
             <Button onClick={() => setIsMenuOpen(!isMenuOpen)} variant="ghost" size="icon">
@@ -136,16 +132,16 @@ const Header = () => {
         <div className="md:hidden bg-white border-t">
           <nav className="flex flex-col px-4 pt-2 pb-4 space-y-1">
             {navLinks.map((link) => (
-              <a key={link.name} href={link.href}
+              <Link key={link.name} href={link.href}
                 className="px-3 py-2 rounded-md text-base font-medium text-gray-600 hover:bg-gray-100 hover:text-blue-600"
                 onClick={() => setIsMenuOpen(false)}
               >
                 {link.name}
-              </a>
+              </Link>
             ))}
-            <Button onClick={() => window.location.href = '/contact'} className="w-full mt-2">
-              無料相談・お見積もり
-            </Button>
+             <Link href="/contact" className="w-full mt-2">
+                <Button className="w-full">無料相談・お見積もり</Button>
+            </Link>
           </nav>
         </div>
       )}
@@ -153,7 +149,6 @@ const Header = () => {
   );
 };
 
-// Heroコンポーネント
 const Hero = () => (
   <section className="bg-white">
     <div className="container mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-20 text-center">
@@ -165,18 +160,17 @@ const Hero = () => (
         リンゴループ、起動不良、水没で諦めていた大切なデータ。専門の技術者があなたのスマホを救います。
       </p>
       <div className="mt-8 flex justify-center gap-4">
-        <Button size="lg" onClick={() => window.location.href = '/contact'}>
-          今すぐ無料診断を申し込む
-        </Button>
-        <Button size="lg" variant="outline" onClick={() => window.location.href = '#features'}>
-          サービス内容を見る
-        </Button>
+        <Link href="/contact">
+            <Button size="lg">今すぐ無料診断を申し込む</Button>
+        </Link>
+        <a href="#features">
+            <Button size="lg" variant="outline">サービス内容を見る</Button>
+        </a>
       </div>
     </div>
   </section>
 );
 
-// Featuresコンポーネント
 const Features = () => {
   const features: Feature[] = [
     { icon: PowerOff, title: "起動しない", description: "突然電源が入らなくなった、充電しても反応がない端末を復旧させます。" },
@@ -212,24 +206,11 @@ const Features = () => {
   );
 };
 
-// Testimonialsコンポーネント
 const Testimonials = () => {
   const testimonials: Testimonial[] = [
-    {
-      quote: "リンゴループで完全に諦めていたiPhoneから、子供の写真データが全て戻ってきました。本当に感謝しています。",
-      name: "佐藤様",
-      device: "iPhone 12 Pro"
-    },
-    {
-      quote: "別の修理店では基板交換で高額になると言われましたが、こちらでは安く修理していただき、データもそのままでした。",
-      name: "鈴木様",
-      device: "iPhone SE2"
-    },
-    {
-      quote: "水没させてしまい電源が入らなくなったスマホ。LINEの履歴も復元できて、仕事に支障が出ずに済みました。",
-      name: "高橋様",
-      device: "iPhone 13 mini"
-    },
+    { quote: "リンゴループで完全に諦めていたiPhoneから、子供の写真データが全て戻ってきました。本当に感謝しています。", name: "佐藤様", device: "iPhone 12 Pro" },
+    { quote: "別の修理店では基板交換で高額になると言われましたが、こちらでは安く修理していただき、データもそのままでした。", name: "鈴木様", device: "iPhone SE2" },
+    { quote: "水没させてしまい電源が入らなくなったスマホ。LINEの履歴も復元できて、仕事に支障が出ずに済みました。", name: "高橋様", device: "iPhone 13 mini" },
   ];
 
   return (
@@ -244,31 +225,26 @@ const Testimonials = () => {
             <Card key={item.name}>
               <CardContent className="pt-6">
                 <div className="flex space-x-1 mb-4">
-                  {[...Array(5)].map((_, i) => (
-                    <Star key={i} className="h-5 w-5 text-yellow-400 fill-yellow-400" />
-                  ))}
+                  {[...Array(5)].map((_, i) => <Star key={i} className="h-5 w-5 text-yellow-400 fill-yellow-400" />)}
                 </div>
-                <p className="text-gray-700">"{item.quote}"</p>
+                <p className="text-gray-700">&quot;{item.quote}&quot;</p>
               </CardContent>
               <CardFooter>
-                <p className="text-sm font-semibold text-gray-900">
-                  {item.name} <span className="text-gray-500 font-normal">({item.device})</span>
-                </p>
+                <p className="text-sm font-semibold text-gray-900">{item.name} <span className="text-gray-500 font-normal">({item.device})</span></p>
               </CardFooter>
             </Card>
           ))}
         </div>
         <div className="text-center mt-12">
-          <Button variant="outline" onClick={() => window.location.href = '/repairs'}>
-            すべての修理事例を見る <ChevronRight className="ml-2 h-4 w-4" />
-          </Button>
+          <Link href="/repairs">
+            <Button variant="outline">すべての修理事例を見る <ChevronRight className="ml-2 h-4 w-4" /></Button>
+          </Link>
         </div>
       </div>
     </section>
   );
 };
 
-// CTAコンポーネント
 const CTA = () => (
   <section className="bg-gray-900">
     <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-20">
@@ -279,24 +255,23 @@ const CTA = () => (
         <p className="mt-4 text-lg text-gray-300">
           まずは無料診断から。専門スタッフがあなたの状況を詳しくお伺いし、最適な修理方法をご提案します。
         </p>
-        <Button size="lg" className="mt-8" onClick={() => window.location.href = '/contact'}>
-          お問い合わせフォームへ進む
-        </Button>
+        <Link href="/contact">
+            <Button size="lg" className="mt-8">お問い合わせフォームへ進む</Button>
+        </Link>
       </div>
     </div>
   </section>
 );
 
-// Footerコンポーネント
 const Footer = () => (
   <footer className="bg-gray-50 border-t">
     <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
       <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
         <div className="col-span-2 md:col-span-1">
-          <a href="/" className="flex items-center space-x-2">
+          <Link href="/" className="flex items-center space-x-2">
             <CircuitBoard className="h-7 w-7 text-blue-600" />
             <span className="text-xl font-bold text-gray-800">基板修理.com</span>
-          </a>
+          </Link>
           <p className="mt-4 text-sm text-gray-500">
             iPhone・スマホの基板修理とデータ復旧の専門サービス。
           </p>
@@ -305,9 +280,9 @@ const Footer = () => (
           <h3 className="text-sm font-semibold text-gray-900">サイトマップ</h3>
           <ul className="mt-4 space-y-2">
             <li><a href="#features" className="text-sm text-gray-500 hover:text-gray-900">サービス</a></li>
-            <li><a href="/repairs" className="text-sm text-gray-500 hover:text-gray-900">修理事例</a></li>
-            <li><a href="/blog" className="text-sm text-gray-500 hover:text-gray-900">技術コラム</a></li>
-            <li><a href="/contact" className="text-sm text-gray-500 hover:text-gray-900">お問い合わせ</a></li>
+            <li><Link href="/repairs" className="text-sm text-gray-500 hover:text-gray-900">修理事例</Link></li>
+            <li><Link href="/blog" className="text-sm text-gray-500 hover:text-gray-900">技術コラム</Link></li>
+            <li><Link href="/contact" className="text-sm text-gray-500 hover:text-gray-900">お問い合わせ</Link></li>
           </ul>
         </div>
         <div>
