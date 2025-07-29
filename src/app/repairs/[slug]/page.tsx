@@ -5,38 +5,52 @@ import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { Calendar, Tag, Folder, ArrowLeft } from 'lucide-react';
 
+// 型定義をコンポーネントの外で明確に行うことで、Vercelビルド時の型の誤解釈を防ぎます
+type Props = {
+  params: {
+    slug: string;
+  };
+};
+
 // generateStaticParams: Vercelで確実に型が解決されるように、よりシンプルな書き方に修正
 export async function generateStaticParams() {
-  const { contents } = await getRepairCases({ limit: 1000 });
-
-  // nullチェックを追加して、より安全に
-  if (!contents) {
+  try {
+    const { contents } = await getRepairCases({ limit: 1000 });
+    if (!contents) {
+      return [];
+    }
+    return contents.map((post) => ({
+      slug: post.slug,
+    }));
+  } catch (error) {
+    console.error("Failed to generate static params:", error);
     return [];
   }
-
-  return contents.map((post) => ({
-    slug: post.slug,
-  }));
 }
 
-// ページコンポーネント: propsの型定義を、Vercelが誤解しない最も安全な形式に修正
-export default async function RepairCaseDetailPage({
-  params,
-}: {
-  params: { slug: string };
-}) {
+// ページコンポーネント: propsの型を上で定義した`Props`で指定します
+export default async function RepairCaseDetailPage({ params }: Props) {
   const { slug } = params;
+  let post;
 
-  const { contents } = await getRepairCases({
-    filters: `slug[equals]${slug}`,
-  });
+  try {
+    const { contents } = await getRepairCases({
+      filters: `slug[equals]${slug}`,
+    });
 
-  // 記事が見つからなかった場合は、404ページを表示
-  if (!contents || contents.length === 0) {
+    if (!contents || contents.length === 0) {
+      notFound();
+    }
+    post = contents[0];
+  } catch (error) {
+    console.error("Failed to fetch post details:", error);
     notFound();
   }
-
-  const post = contents[0];
+  
+  // postが取得できなかった場合の最終防衛ライン
+  if (!post) {
+    notFound();
+  }
 
   return (
     <div className="bg-white min-h-screen">
