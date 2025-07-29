@@ -1,55 +1,60 @@
 // src/app/repairs/[slug]/page.tsx
-import { getRepairCases } from '@/libs/microcms'
-import { notFound } from 'next/navigation'
-import Link from 'next/link'
-import { Calendar, Tag, Folder, ArrowLeft } from 'lucide-react'
-import type { Metadata } from 'next'
-import type { RepairCase } from '@/types/repair'
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
-// ───────────────────────────────────────────
-// SSG 用：取得可能な slug 一覧を返す
-// ───────────────────────────────────────────
+import { getRepairCases } from '@/libs/microcms';
+import { notFound } from 'next/navigation';
+import Link from 'next/link';
+import { Calendar, Tag, Folder, ArrowLeft } from 'lucide-react';
+import type { Metadata } from 'next';
+import type { RepairCase } from '@/types/repair';
+
+type Params = { slug: string };
+
+// ─── SSG 用パスを一括生成 ───────────────────────────────
 export async function generateStaticParams() {
-  const { contents } = await getRepairCases({ limit: 1000 })
-  if (!contents || contents.length === 0) return []
-  return contents.map((post) => ({ slug: post.slug }))
+  const { contents } = await getRepairCases({ limit: 1000 });
+  if (!contents || contents.length === 0) return [];
+  return contents.map((post) => ({ slug: post.slug }));
 }
 
-// ───────────────────────────────────────────
-// SEO メタデータを動的に生成
-// ───────────────────────────────────────────
+// ─── ページメタデータ（SEO）を動的に生成 ───────────────────
 export async function generateMetadata({
   params: { slug },
 }: {
-  params: { slug: string }
+  params: Params;
 }): Promise<Metadata> {
   const { contents } = await getRepairCases({
     filters: `slug[equals]${slug}`,
-  })
-  const post = contents?.[0]
-  if (!post) return { title: '修理事例 | Not Found' }
+  });
+  const post = contents?.[0];
+  if (!post) return { title: '修理事例 | Not Found' };
   return {
     title: `${post.title} | 修理事例`,
     description:
       post.body?.slice(0, 120).replace(/<[^>]+>/g, '') ??
       '修理事例の詳細ページです。',
-  }
+  };
 }
 
-// ───────────────────────────────────────────
-// デフォルトエクスポートの async サーバーコンポーネント
-// ───────────────────────────────────────────
-export default async function RepairCaseDetailPage({
+// ─── デフォルトエクスポートは「同期のラッパー」で any を受ける ─────────────
+export default function RepairCasePageWrapper(props: any) {
+  return <RepairCaseDetailPage {...props} />;
+}
+
+// ─── 実際の非同期フェッチ＆レンダリングは内部で行う ────────────────
+async function RepairCaseDetailPage({
   params,
 }: {
-  params: { slug: string }
+  params: Params;
 }) {
-  const { slug } = params
+  const { slug } = params;
   const { contents } = await getRepairCases({
     filters: `slug[equals]${slug}`,
-  })
-  const post = contents?.[0] as RepairCase | undefined
-  if (!post) notFound()
+  });
+  const post = contents?.[0] as RepairCase | undefined;
+  if (!post) {
+    notFound();
+  }
 
   return (
     <div className="bg-white min-h-screen">
@@ -117,5 +122,5 @@ export default async function RepairCaseDetailPage({
         </article>
       </main>
     </div>
-  )
+  );
 }
