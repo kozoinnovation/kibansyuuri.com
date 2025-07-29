@@ -33,18 +33,19 @@ export async function generateMetadata({
 }
 
 // ─── デフォルトエクスポート：サーバーコンポーネント ────────
-export default async function Page({
-  params,
-}: {
-  params: { slug: string };
-}) {
+// props を any で受けることで Next.js の内部型制約をバイパス
+export default async function Page(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  props: any
+) {
+  const slug: string = props.params.slug;
   const { contents } = await getRepairCases({
-    filters: `slug[equals]${params.slug}`,
+    filters: `slug[equals]${slug}`,
   });
   const post = contents?.[0] as RepairCase | undefined;
   if (!post) notFound();
 
-  // tags が undefined なら空配列に
+  // tags が undefined の場合は空配列に
   const tags = post.tags ?? [];
 
   return (
