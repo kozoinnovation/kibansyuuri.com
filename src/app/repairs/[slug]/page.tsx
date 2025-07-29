@@ -6,40 +6,51 @@ import { Calendar, Tag, Folder, ArrowLeft } from 'lucide-react';
 import type { Metadata } from 'next';
 import type { RepairCase } from '@/types/repair';
 
+// Next.js App Routerがページコンポーネントに渡すpropsの型を、規約に合わせて明示的に定義
 type Props = {
   params: {
     slug: string;
   };
+  searchParams?: {
+    [key: string]: string | string[] | undefined;
+  };
 };
 
-// SSG用にあらかじめ生成するパス
+// SSG 用パスを一括生成
 export async function generateStaticParams() {
   const { contents } = await getRepairCases({ limit: 1000 });
-  if (!contents) return [];
+  if (!contents || contents.length === 0) {
+    return [];
+  }
   return contents.map((post) => ({ slug: post.slug }));
 }
 
-// ページごとのメタデータ (SEO)
+// ページメタデータ（SEO対応）
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = params;
   const { contents } = await getRepairCases({ filters: `slug[equals]${slug}` });
   const post = contents?.[0];
-  if (!post) {
-    return { title: '修理事例 | Not Found', description: '該当する修理事例は見つかりませんでした。' };
-  }
+
+  if (!post) return { title: '修理事例 | Not Found' };
   return {
     title: `${post.title} | 修理事例`,
     description: post.body?.slice(0, 120).replace(/<[^>]+>/g, '') ?? '修理事例の詳細ページです。',
   };
 }
 
-// サーバーコンポーネントとして直接エクスポート
-export default async function Page({ params }: Props) {
+// ───────────────────────────────────────
+// ✅ 最終修正：ラッパーを廃止し、単一のasyncサーバーコンポーネントとして定義
+// ───────────────────────────────────────
+export default async function RepairCaseDetailPage({ params }: Props) {
   const { slug } = params;
-  const { contents } = await getRepairCases({ filters: `slug[equals]${slug}` });
-  const post = contents?.[0] as RepairCase | undefined;
+  const { contents } = await getRepairCases({
+    filters: `slug[equals]${slug}`,
+  });
 
-  if (!post) notFound();
+  const post = contents?.[0] as RepairCase | undefined;
+  if (!post) {
+    notFound();
+  }
 
   return (
     <div className="bg-white min-h-screen">
@@ -60,7 +71,9 @@ export default async function Page({ params }: Props) {
           <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-gray-500 mb-6 border-b pb-4">
             <div className="flex items-center gap-1.5">
               <Calendar size={14} />
-              <span>{new Date(post.publishedAt).toLocaleDateString('ja-JP')}</span>
+              <span>
+                {new Date(post.publishedAt).toLocaleDateString('ja-JP')}
+              </span>
             </div>
             {post.category && (
               <div className="flex items-center gap-1.5">
