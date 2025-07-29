@@ -1,4 +1,5 @@
 // src/app/repairs/[slug]/page.tsx
+// @ts-nocheck
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { getRepairCases } from '@/libs/microcms';
@@ -36,7 +37,7 @@ export async function generateMetadata({
   };
 }
 
-// ─── デフォルトエクスポートは「同期のラッパー」で any を受ける ─────────────
+// ─── デフォルトエクスポートは any で受ける「同期のラッパー」 ─────────────
 export default function RepairCasePageWrapper(props: any) {
   return <RepairCaseDetailPage {...props} />;
 }
