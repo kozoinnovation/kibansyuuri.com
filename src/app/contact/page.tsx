@@ -49,14 +49,14 @@ const Button = React.forwardRef<
 });
 Button.displayName = 'Button';
 
-// Input and Textarea with dark mode support
+// Input and Textarea with enhanced visibility
 const Input = React.forwardRef<HTMLInputElement, React.InputHTMLAttributes<HTMLInputElement>>(
   (props, ref) => (
     <input
       ref={ref}
       className={cn(
-        'flex h-10 w-full rounded-md border border-gray-400 bg-white px-3 py-2 text-sm text-gray-900 ring-offset-white placeholder:text-gray-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50',
-        'dark:border-gray-600 dark:bg-gray-800 dark:text-gray-50 dark:ring-offset-gray-900 dark:placeholder:text-gray-400', // Dark mode styles
+        'flex h-10 w-full rounded-md border border-gray-300 bg-gray-50 px-3 py-2 text-sm text-gray-900 ring-offset-white placeholder:text-gray-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50',
+        'dark:border-gray-700 dark:bg-gray-800 dark:text-gray-50 dark:ring-offset-gray-900 dark:placeholder:text-gray-500', // Dark mode styles
         props.className
       )}
       {...props}
@@ -70,8 +70,8 @@ const Textarea = React.forwardRef<HTMLTextAreaElement, React.TextareaHTMLAttribu
     <textarea
       ref={ref}
       className={cn(
-        'flex min-h-[120px] w-full rounded-md border border-gray-400 bg-white px-3 py-2 text-sm text-gray-900 ring-offset-white placeholder:text-gray-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50',
-        'dark:border-gray-600 dark:bg-gray-800 dark:text-gray-50 dark:ring-offset-gray-900 dark:placeholder:text-gray-400', // Dark mode styles
+        'flex min-h-[120px] w-full rounded-md border border-gray-300 bg-gray-50 px-3 py-2 text-sm text-gray-900 ring-offset-white placeholder:text-gray-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50',
+        'dark:border-gray-700 dark:bg-gray-800 dark:text-gray-50 dark:ring-offset-gray-900 dark:placeholder:text-gray-500', // Dark mode styles
         props.className
       )}
       {...props}
@@ -80,7 +80,7 @@ const Textarea = React.forwardRef<HTMLTextAreaElement, React.TextareaHTMLAttribu
 );
 Textarea.displayName = 'Textarea';
 
-// Header with dark mode support
+// Header
 const Header: React.FC = () => {
   const [open, setOpen] = useState(false);
   const links = [
@@ -90,21 +90,21 @@ const Header: React.FC = () => {
     { name: 'お問い合わせ', href: '/contact' },
   ];
   return (
-    <header className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-md sticky top-0 z-50 border-b dark:border-gray-800">
-      <div className="container mx-auto flex items-center justify-between h-16 px-4 sm:px-6 lg:px-8">
+    <header className="bg-white/90 dark:bg-gray-900/90 sticky top-0 z-50 border-b dark:border-gray-800 backdrop-blur">
+      <div className="container mx-auto flex items-center justify-between h-16 px-4">
         <Link href="/" className="flex items-center space-x-2">
           <CircuitBoard className="h-7 w-7 text-blue-600" />
           <span className="text-xl font-bold text-gray-800 dark:text-gray-100">基板修理.com</span>
         </Link>
         <nav className="hidden md:flex space-x-6">
           {links.map((l) => (
-            <Link key={l.href} href={l.href} className="text-sm font-medium text-gray-500 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+            <Link key={l.href} href={l.href} className="text-sm font-medium text-gray-500 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400">
               {l.name}
             </Link>
           ))}
         </nav>
         <div className="md:hidden">
-            <Button onClick={() => setOpen(!open)} variant="ghost" size="icon">
+            <Button variant="ghost" size="icon" onClick={() => setOpen(!open)}>
               {open ? <X size={24} /> : <Menu size={24} />}
             </Button>
         </div>
@@ -115,7 +115,7 @@ const Header: React.FC = () => {
             <Link
               key={l.href}
               href={l.href}
-              className="block px-4 py-3 text-base font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
+              className="block px-4 py-3 text-base hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300"
               onClick={() => setOpen(false)}
             >
               {l.name}
@@ -128,9 +128,9 @@ const Header: React.FC = () => {
 };
 Header.displayName = 'Header';
 
-// Footer with dark mode support
+// Footer
 const Footer: React.FC = () => (
-  <footer className="bg-gray-50 dark:bg-gray-800 border-t dark:border-gray-700 py-8 mt-16">
+  <footer className="bg-gray-50 dark:bg-gray-800 border-t dark:border-gray-700 py-8 mt-12">
     <div className="container mx-auto text-center text-sm text-gray-500 dark:text-gray-400">
       &copy; {new Date().getFullYear()} kibansyuuri.com. All Rights Reserved.
     </div>
@@ -143,7 +143,7 @@ const formSchema = z.object({
   name: z.string().min(1, { message: 'お名前は必須です。' }),
   phone: z
     .string()
-    .min(10, { message: '電話番号は10桁以上で入力してください。' })
+    .min(10, { message: '電話番号は10桁以上で入力してください。'})
     .regex(/^([0-9]{10,11})$/, { message: '電話番号の形式が正しくありません。' }),
   email: z.string().email({ message: '有効なメールアドレスを入力してください。' }),
   device: z.string().min(1, { message: '機種名は必須です。' }),
@@ -164,7 +164,7 @@ type InputGroupProps = {
 
 const InputGroup: React.FC<InputGroupProps> = ({ label, id, error, isTextarea, register, ...rest }) => (
   <div>
-    <label htmlFor={id} className="block text-sm font-semibold mb-2 text-gray-800 dark:text-gray-200">
+    <label htmlFor={id} className="block text-sm font-semibold mb-2 text-gray-700 dark:text-gray-300">
       {label}
     </label>
     {isTextarea ? (
@@ -200,7 +200,8 @@ const ContactForm: React.FC = () => {
       );
       setStatus({ status: 'success', message: 'お問い合わせありがとうございます。確認後、担当者よりご連絡いたします。' });
       reset();
-    } catch {
+    } catch (e) {
+      console.error(e);
       setStatus({ status: 'error', message: '送信に失敗しました。時間をおいて再度お試しください。' });
     }
   });
