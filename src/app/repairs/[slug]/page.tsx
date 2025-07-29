@@ -6,7 +6,8 @@ import { Calendar, Tag, Folder, ArrowLeft } from 'lucide-react';
 import type { Metadata } from 'next';
 import type { RepairCase } from '@/types/repair';
 
-// Next.js App Routerがページコンポーネントに渡すpropsの型を、規約に合わせて明示的に定義
+// Next.js App Routerがページコンポーネントに渡すpropsの型を、規約に合わせて明示的に定義します。
+// これがVercelのビルドエラーを解決する鍵です。
 type Props = {
   params: {
     slug: string;
