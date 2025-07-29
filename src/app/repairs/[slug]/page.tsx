@@ -1,49 +1,64 @@
 // src/app/repairs/[slug]/page.tsx
-
+import type { Metadata } from 'next';
 import { getRepairCases } from '@/libs/microcms';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { Calendar, Tag, Folder, ArrowLeft } from 'lucide-react';
-import type { Metadata } from 'next';
 import type { RepairCase } from '@/types/repair';
 
 type Params = { slug: string };
 
-// SSG 用パスを一括生成
+// ── 1) SSG 用パスを一括生成 ───────────────────────────
 export async function generateStaticParams(): Promise<Params[]> {
   const { contents } = await getRepairCases({ limit: 1000 });
   if (!contents || contents.length === 0) return [];
   return contents.map((post) => ({ slug: post.slug }));
 }
 
-// SEO 用メタデータ
+// ── 2) SEOメタデータ生成 ───────────────────────────────
 export async function generateMetadata({
   params,
 }: {
   params: Params;
 }): Promise<Metadata> {
-  const { slug } = params;
-  const { contents } = await getRepairCases({ filters: `slug[equals]${slug}` });
+  const { contents } = await getRepairCases({
+    filters: `slug[equals]${params.slug}`,
+  });
   const post = contents?.[0];
   if (!post) {
-    return { title: '修理事例 | Not Found', description: '記事が見つかりませんでした。' };
+    return {
+      title: '修理事例 | Not Found',
+      description: 'お探しの修理事例は見つかりませんでした。',
+    };
   }
-  const text = post.body?.replace(/<[^>]+>/g, '') ?? '';
+  const plain = post.body?.replace(/<[^>]+>/g, '') ?? '';
   return {
     title: `${post.title} | 修理事例`,
-    description: text.slice(0, 120),
+    description: plain.slice(0, 120),
   };
 }
 
-// 🚨 Vercel ビルド回避のため、ここだけ any で受ける
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export default function RepairCaseDetailPageWrapper(props: any) {
-  return <RepairCaseDetailPage {...props} />;
+// ── 3) デフォルトエクスポートは同期ラッパー ───────────────
+export default function RepairCaseDetailPageWrapper({
+  params,
+  searchParams,
+}: {
+  params: Params;
+  searchParams?: Record<string, string | string[] | undefined>;
+}) {
+  // 非同期コンポーネントを呼び出す
+  return <RepairCaseDetailPage params={params} />;
 }
 
-async function RepairCaseDetailPage({ params }: { params: Params }) {
-  const { slug } = params;
-  const { contents } = await getRepairCases({ filters: `slug[equals]${slug}` });
+// ── 4) 実際のフェッチ／描画は async コンポーネント ──────────
+async function RepairCaseDetailPage({
+  params,
+}: {
+  params: Params;
+}) {
+  const { contents } = await getRepairCases({
+    filters: `slug[equals]${params.slug}`,
+  });
   const post = contents?.[0] as RepairCase | undefined;
   if (!post) notFound();
 
@@ -66,7 +81,9 @@ async function RepairCaseDetailPage({ params }: { params: Params }) {
           <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-gray-500 mb-6 border-b pb-4">
             <div className="flex items-center gap-1.5">
               <Calendar size={14} />
-              <span>{new Date(post.publishedAt).toLocaleDateString('ja-JP')}</span>
+              <span>
+                {new Date(post.publishedAt).toLocaleDateString('ja-JP')}
+              </span>
             </div>
             {post.category && (
               <div className="flex items-center gap-1.5">
@@ -93,7 +110,7 @@ async function RepairCaseDetailPage({ params }: { params: Params }) {
             dangerouslySetInnerHTML={{ __html: post.body ?? '' }}
           />
 
-          {post.tags && post.tags.length > 0 && (
+          {post.tags?.length ? (
             <div className="mt-8 pt-6 border-t">
               <div className="flex flex-wrap items-center gap-2">
                 <Tag size={16} className="text-gray-500" />
@@ -107,7 +124,7 @@ async function RepairCaseDetailPage({ params }: { params: Params }) {
                 ))}
               </div>
             </div>
-          )}
+          ) : null}
         </article>
       </main>
     </div>
