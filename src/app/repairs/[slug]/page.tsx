@@ -10,8 +10,8 @@ interface PageProps {
   };
 }
 
-// --- 静的生成のためのパス定義（SSG用） ---
-export async function generateStaticParams(): Promise<PageProps['params'][]> {
+// 修正済み！戻り値の型は Promise<{ slug: string }[]>
+export async function generateStaticParams(): Promise<{ slug: string }[]> {
   const { contents } = await getRepairCases({ limit: 1000 });
 
   return contents.map((post) => ({
@@ -19,7 +19,6 @@ export async function generateStaticParams(): Promise<PageProps['params'][]> {
   }));
 }
 
-// --- 詳細ページ本体 ---
 export default async function RepairCaseDetailPage({ params }: PageProps) {
   const { slug } = params;
 
