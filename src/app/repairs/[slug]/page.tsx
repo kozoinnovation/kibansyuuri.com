@@ -1,4 +1,5 @@
 // src/app/repairs/[slug]/page.tsx
+
 import { getRepairCases } from '@/libs/microcms';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
@@ -8,67 +9,46 @@ import type { RepairCase } from '@/types/repair';
 
 type Params = { slug: string };
 
-// ───────────────────────────────────────
-// SSG用の全ルートを生成
-// ───────────────────────────────────────
-export async function generateStaticParams(): Promise<Params[]> {
+// ─── SSG 用パスを一括生成 ───────────────────
+export async function generateStaticParams() {
   const { contents } = await getRepairCases({ limit: 1000 });
   if (!contents || contents.length === 0) return [];
   return contents.map((post) => ({ slug: post.slug }));
 }
 
-// ───────────────────────────────────────
-// ページタイトルやメタデータを動的に生成
-// ───────────────────────────────────────
-export async function generateMetadata({
-  params,
-}: {
-  params: Params;
-}): Promise<Metadata> {
+// ─── ページごとのメタデータ（SEO対応） ────────
+export async function generateMetadata({ params }: { params: Params }): Promise<Metadata> {
   const { slug } = params;
-  const { contents } = await getRepairCases({
-    filters: `slug[equals]${slug}`,
-  });
+  const { contents } = await getRepairCases({ filters: `slug[equals]${slug}` });
   const post = contents?.[0];
   if (!post) {
     return {
-      title: '修理事例 | 見つかりません',
-      description: '指定された修理事例は存在しません。',
+      title: '修理事例 | Not Found',
+      description: '該当する修理事例が見つかりませんでした。',
     };
   }
-  const description = post.body.replace(/<[^>]+>/g, '').slice(0, 80);
+  const plain = post.body?.replace(/<[^>]+>/g, '') ?? '';
   return {
     title: `${post.title} | 修理事例`,
-    description,
+    description: plain.slice(0, 120),
   };
 }
 
-// ───────────────────────────────────────
-// 🚨 Vercelのビルド回避用：同期エクスポートのラッパー
-// ───────────────────────────────────────
-export default function RepairCaseDetailPageWrapper({
-  params,
-}: {
-  params: Params;
-}) {
+// ─── Vercel のビルドエラー回避のための同期ラッパー ───
+export default function RepairCaseDetailPageWrapper({ params }: { params: Params }) {
   return <RepairCaseDetailPage params={params} />;
 }
 
-// ───────────────────────────────────────
-// 🚀 実際のフェッチ＆レンダリングは非同期コンポーネントで
-// ───────────────────────────────────────
-async function RepairCaseDetailPage({
-  params,
-}: {
-  params: Params;
-}) {
+// ─── 実際のフェッチ＆レンダリングは非同期コンポーネント ──
+async function RepairCaseDetailPage({ params }: { params: Params }) {
   const { slug } = params;
   const { contents } = await getRepairCases({
     filters: `slug[equals]${slug}`,
   });
-
   const post = contents?.[0] as RepairCase | undefined;
-  if (!post) notFound();
+  if (!post) {
+    notFound();
+  }
 
   return (
     <div className="bg-white min-h-screen">
@@ -89,9 +69,7 @@ async function RepairCaseDetailPage({
           <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-gray-500 mb-6 border-b pb-4">
             <div className="flex items-center gap-1.5">
               <Calendar size={14} />
-              <span>
-                {new Date(post.publishedAt).toLocaleDateString('ja-JP')}
-              </span>
+              <span>{new Date(post.publishedAt).toLocaleDateString('ja-JP')}</span>
             </div>
             {post.category && (
               <div className="flex items-center gap-1.5">
@@ -101,7 +79,7 @@ async function RepairCaseDetailPage({
             )}
           </div>
 
-          {post.image && (
+          {post.image?.url && (
             <figure className="mb-8">
               <img
                 src={`${post.image.url}?w=800&auto=format`}
@@ -115,10 +93,10 @@ async function RepairCaseDetailPage({
 
           <div
             className="prose lg:prose-lg max-w-none"
-            dangerouslySetInnerHTML={{ __html: post.body }}
+            dangerouslySetInnerHTML={{ __html: post.body ?? '' }}
           />
 
-          {post.tags?.length ? (
+          {post.tags && post.tags.length > 0 && (
             <div className="mt-8 pt-6 border-t">
               <div className="flex flex-wrap items-center gap-2">
                 <Tag size={16} className="text-gray-500" />
@@ -132,7 +110,7 @@ async function RepairCaseDetailPage({
                 ))}
               </div>
             </div>
-          ) : null}
+          )}
         </article>
       </main>
     </div>
