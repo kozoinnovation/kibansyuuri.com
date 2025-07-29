@@ -1,8 +1,8 @@
-import { NextConfig } from 'next';
+import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
-  experimental: {
-    appDir: true,
+  images: {
+    domains: ['images.microcms-assets.io'],
   },
 };
 

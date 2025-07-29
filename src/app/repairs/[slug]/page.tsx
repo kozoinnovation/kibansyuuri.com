@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { Calendar, Tag, Folder, ArrowLeft } from 'lucide-react';
 import type { Metadata } from 'next';
+import Image from 'next/image';
 
 // SSG 用の静的パスを生成
 export async function generateStaticParams() {
@@ -11,10 +12,8 @@ export async function generateStaticParams() {
   return contents.map(post => ({ slug: post.slug }));
 }
 
-// SEO メタデータ生成（Props はすべて inline 定義）
-export async function generateMetadata(
-  { params }: { params: { slug: string } }
-): Promise<Metadata> {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export async function generateMetadata({ params }: any): Promise<Metadata> {
   const { contents } = await getRepairCases({
     filters: `slug[equals]${params.slug}`,
   });
@@ -33,10 +32,8 @@ export async function generateMetadata(
   };
 }
 
-// ページ本体コンポーネント（こちらも Props は inline）
-export default async function RepairDetailPage(
-  { params }: { params: { slug: string } }
-) {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+async function RepairDetailPage({ params }: any) {
   const { contents } = await getRepairCases({
     filters: `slug[equals]${params.slug}`,
   });
@@ -76,7 +73,7 @@ export default async function RepairDetailPage(
 
           {post.image && (
             <figure className="mb-8">
-              <img
+              <Image
                 src={`${post.image.url}?w=800&auto=format`}
                 alt={post.title}
                 width={800}
@@ -111,3 +108,5 @@ export default async function RepairDetailPage(
     </div>
   );
 }
+
+export default RepairDetailPage;

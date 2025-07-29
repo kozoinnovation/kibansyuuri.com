@@ -1,24 +1,19 @@
-'use client'; 
+'use client';
 
 import React, { useState } from 'react';
-import Link from 'next/link'; // aタグの代わりにNext.jsのLinkコンポーネントを使用
+import Link from 'next/link';
 import {
   CircuitBoard,
-  Cpu,
   Wrench,
   Droplets,
-  Shield,
   Star,
   Menu,
   X,
   ChevronRight,
-  Phone,
-  Mail,
   PowerOff,
   Database
 } from 'lucide-react';
 
-// --- 型定義 ---
 type ButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
   variant?: 'default' | 'destructive' | 'outline' | 'secondary' | 'ghost' | 'link';
   size?: 'default' | 'sm' | 'lg' | 'icon';
@@ -40,64 +35,62 @@ interface Testimonial {
   device: string;
 }
 
-// --- 共通UIコンポーネント ---
 const cn = (...classes: (string | undefined | null | false)[]) => classes.filter(Boolean).join(' ');
 
-const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-  function Button({ className, variant = 'default', size = 'default', ...props }, ref) {
-    const variants = {
-      default: "bg-blue-600 text-white hover:bg-blue-600/90",
-      destructive: "bg-red-500 text-white hover:bg-red-500/90",
-      outline: "border border-gray-200 bg-transparent hover:bg-gray-100",
-      secondary: "bg-gray-100 text-gray-900 hover:bg-gray-100/80",
-      ghost: "hover:bg-gray-100",
-      link: "text-blue-600 underline-offset-4 hover:underline",
-    };
-    const sizes = {
-      default: "h-10 px-4 py-2",
-      sm: "h-9 rounded-md px-3",
-      lg: "h-11 rounded-md px-8",
-      icon: "h-10 w-10",
-    };
-    return (
-      <button
-        ref={ref}
-        className={cn(
-          "inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-white transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50",
-          variants[variant],
-          sizes[size],
-          className
-        )}
-        {...props}
-      />
-    );
-  }
-);
+const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(function Button(
+  { className, variant = 'default', size = 'default', ...props },
+  ref
+) {
+  const variants = {
+    default: 'bg-blue-600 text-white hover:bg-blue-600/90',
+    destructive: 'bg-red-500 text-white hover:bg-red-500/90',
+    outline: 'border border-gray-200 bg-transparent hover:bg-gray-100',
+    secondary: 'bg-gray-100 text-gray-900 hover:bg-gray-100/80',
+    ghost: 'hover:bg-gray-100',
+    link: 'text-blue-600 underline-offset-4 hover:underline',
+  };
+  const sizes = {
+    default: 'h-10 px-4 py-2',
+    sm: 'h-9 rounded-md px-3',
+    lg: 'h-11 rounded-md px-8',
+    icon: 'h-10 w-10',
+  };
+  return (
+    <button
+      ref={ref}
+      className={cn(
+        'inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-white transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50',
+        variants[variant],
+        sizes[size],
+        className
+      )}
+      {...props}
+    />
+  );
+});
 
 const Card = ({ className, children, ...props }: CardProps) => (
-  <div className={cn("rounded-xl border bg-white text-gray-900 shadow-sm", className)} {...props}>
+  <div className={cn('rounded-xl border bg-white text-gray-900 shadow-sm', className)} {...props}>
     {children}
   </div>
 );
 const CardHeader = ({ className, children, ...props }: CardHeaderProps) => (
-  <div className={cn("flex flex-col space-y-1.5 p-6", className)} {...props}>{children}</div>
+  <div className={cn('flex flex-col space-y-1.5 p-6', className)} {...props}>{children}</div>
 );
 const CardContent = ({ className, children, ...props }: CardContentProps) => (
-  <div className={cn("p-6 pt-0", className)} {...props}>{children}</div>
+  <div className={cn('p-6 pt-0', className)} {...props}>{children}</div>
 );
 const CardFooter = ({ className, children, ...props }: CardFooterProps) => (
-  <div className={cn("flex items-center p-6 pt-0", className)} {...props}>{children}</div>
+  <div className={cn('flex items-center p-6 pt-0', className)} {...props}>{children}</div>
 );
-
-// --- ページセクションコンポーネント ---
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const navLinks = [
-    { name: "サービス", href: "#features" },
-    { name: "修理事例", href: "/repairs" }, // リンクを/repairsに修正
-    { name: "技術コラム", href: "/blog" },
-    { name: "お問い合わせ", href: "/contact" },
+    { name: 'サービス', href: '#features' },
+    { name: '修理事例', href: '/repairs' },
+    { name: '技術コラム', href: '/blog' },
+    { name: 'お問い合わせ', href: '/contact' },
   ];
 
   return (
@@ -131,15 +124,12 @@ const Header = () => {
         <div className="md:hidden bg-white border-t">
           <nav className="flex flex-col px-4 pt-2 pb-4 space-y-1">
             {navLinks.map((link) => (
-              <Link key={link.name} href={link.href}
-                className="px-3 py-2 rounded-md text-base font-medium text-gray-600 hover:bg-gray-100 hover:text-blue-600"
-                onClick={() => setIsMenuOpen(false)}
-              >
+              <Link key={link.name} href={link.href} className="px-3 py-2 rounded-md text-base font-medium text-gray-600 hover:bg-gray-100 hover:text-blue-600" onClick={() => setIsMenuOpen(false)}>
                 {link.name}
               </Link>
             ))}
-             <Link href="/contact" className="w-full mt-2">
-                <Button className="w-full">無料相談・お見積もり</Button>
+            <Link href="/contact" className="w-full mt-2">
+              <Button className="w-full">無料相談・お見積もり</Button>
             </Link>
           </nav>
         </div>
@@ -159,12 +149,8 @@ const Hero = () => (
         リンゴループ、起動不良、水没で諦めていた大切なデータ。専門の技術者があなたのスマホを救います。
       </p>
       <div className="mt-8 flex justify-center gap-4">
-        <Link href="/contact">
-            <Button size="lg">今すぐ無料診断を申し込む</Button>
-        </Link>
-        <a href="#features">
-            <Button size="lg" variant="outline">サービス内容を見る</Button>
-        </a>
+        <Link href="/contact"><Button size="lg">今すぐ無料診断を申し込む</Button></Link>
+        <a href="#features"><Button size="lg" variant="outline">サービス内容を見る</Button></a>
       </div>
     </div>
   </section>
@@ -172,10 +158,10 @@ const Hero = () => (
 
 const Features = () => {
   const features: Feature[] = [
-    { icon: PowerOff, title: "起動しない", description: "突然電源が入らなくなった、充電しても反応がない端末を復旧させます。" },
-    { icon: Droplets, title: "水没してしまった", description: "お風呂や海で水没した端末から、写真や連絡先を救出します。" },
-    { icon: Database, title: "データ復旧", description: "他店で修理不可とされた端末でも、高確率でデータを取り出します。" },
-    { icon: Wrench, title: "他店修理不可", description: "「基板が原因」と言われた難易度の高い修理もお任せください。" },
+    { icon: PowerOff, title: '起動しない', description: '突然電源が入らなくなった、充電しても反応がない端末を復旧させます。' },
+    { icon: Droplets, title: '水没してしまった', description: 'お風呂や海で水没した端末から、写真や連絡先を救出します。' },
+    { icon: Database, title: 'データ復旧', description: '他店で修理不可とされた端末でも、高確率でデータを取り出します。' },
+    { icon: Wrench, title: '他店修理不可', description: '「基板が原因」と言われた難易度の高い修理もお任せください。' },
   ];
 
   return (
@@ -207,9 +193,9 @@ const Features = () => {
 
 const Testimonials = () => {
   const testimonials: Testimonial[] = [
-    { quote: "リンゴループで完全に諦めていたiPhoneから、子供の写真データが全て戻ってきました。本当に感謝しています。", name: "佐藤様", device: "iPhone 12 Pro" },
-    { quote: "別の修理店では基板交換で高額になると言われましたが、こちらでは安く修理していただき、データもそのままでした。", name: "鈴木様", device: "iPhone SE2" },
-    { quote: "水没させてしまい電源が入らなくなったスマホ。LINEの履歴も復元できて、仕事に支障が出ずに済みました。", name: "高橋様", device: "iPhone 13 mini" },
+    { quote: 'リンゴループで完全に諦めていたiPhoneから、子供の写真データが全て戻ってきました。本当に感謝しています。', name: '佐藤様', device: 'iPhone 12 Pro' },
+    { quote: '別の修理店では基板交換で高額になると言われましたが、こちらでは安く修理していただき、データもそのままでした。', name: '鈴木様', device: 'iPhone SE2' },
+    { quote: '水没させてしまい電源が入らなくなったスマホ。LINEの履歴も復元できて、仕事に支障が出ずに済みました。', name: '高橋様', device: 'iPhone 13 mini' },
   ];
 
   return (
@@ -255,7 +241,7 @@ const CTA = () => (
           まずは無料診断から。専門スタッフがあなたの状況を詳しくお伺いし、最適な修理方法をご提案します。
         </p>
         <Link href="/contact">
-            <Button size="lg" className="mt-8">お問い合わせフォームへ進む</Button>
+          <Button size="lg" className="mt-8">お問い合わせフォームへ進む</Button>
         </Link>
       </div>
     </div>
