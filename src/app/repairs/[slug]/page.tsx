@@ -9,14 +9,14 @@ import type { RepairCase } from '@/types/repair';
 
 type Params = { slug: string };
 
-// ─── SSG 用パスを一括生成 ───────────────────
+// SSG 用パスを一括生成
 export async function generateStaticParams() {
   const { contents } = await getRepairCases({ limit: 1000 });
   if (!contents || contents.length === 0) return [];
   return contents.map((post) => ({ slug: post.slug }));
 }
 
-// ─── ページごとのメタデータ（SEO対応） ────────
+// ページメタデータ（SEO対応）
 export async function generateMetadata({ params }: { params: Params }): Promise<Metadata> {
   const { slug } = params;
   const { contents } = await getRepairCases({ filters: `slug[equals]${slug}` });
@@ -34,18 +34,15 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
   };
 }
 
-// ─── Vercel のビルドエラー回避のための同期ラッパー ───
-// props:any で丸ごと受ければ PageProps 制約に引っかからない
+// 🚨 Vercel ビルド回避のため、ここだけ any でラップ
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export default function RepairCaseDetailPageWrapper(props: any) {
   return <RepairCaseDetailPage {...props} />;
 }
 
-// ─── 実際のフェッチ＆レンダリングは非同期コンポーネント ──
 async function RepairCaseDetailPage({ params }: { params: Params }) {
   const { slug } = params;
-  const { contents } = await getRepairCases({
-    filters: `slug[equals]${slug}`,
-  });
+  const { contents } = await getRepairCases({ filters: `slug[equals]${slug}` });
   const post = contents?.[0] as RepairCase | undefined;
   if (!post) notFound();
 
