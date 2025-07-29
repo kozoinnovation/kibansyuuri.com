@@ -1,5 +1,3 @@
-// src/app/repairs/[slug]/page.tsx
-
 import { getRepairCases } from '@/libs/microcms';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
@@ -12,7 +10,7 @@ export async function generateStaticParams() {
   return contents.map((post) => ({ slug: post.slug }));
 }
 
-// ✅ SEOメタデータ生成（← ここが肝！ 型定義は一切外部に置かずにinline）
+// ✅ SEOメタデータ生成
 export async function generateMetadata({
   params,
 }: {
@@ -36,7 +34,7 @@ export async function generateMetadata({
   };
 }
 
-// ✅ 本体ページ（こっちは PageProps 型使ってもOK）
+// ✅ ページ本体（PageProps不要で安全！）
 export default async function RepairDetailPage({
   params,
 }: {
