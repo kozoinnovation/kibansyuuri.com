@@ -1,35 +1,54 @@
 // src/app/repairs/[slug]/page.tsx
-
 import { getRepairCases } from '@/libs/microcms';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { Calendar, Tag, Folder, ArrowLeft } from 'lucide-react';
+import type { Metadata } from 'next';
 import type { RepairCase } from '@/types/repair';
 
 type Params = { slug: string };
 
+// SSG 用パスを一括生成
 export async function generateStaticParams() {
   const { contents } = await getRepairCases({ limit: 1000 });
-  if (!contents) {
+  if (!contents || contents.length === 0) {
     return [];
   }
   return contents.map((post) => ({ slug: post.slug }));
 }
 
-// 🚨 ここは同期関数で export default！！
-// Vercelのビルドエラーを回避するためのラッパーコンポーネント
+// ページメタデータ（SEO対応）
+export async function generateMetadata({ params }: { params: Params }): Promise<Metadata> {
+  const { slug } = params;
+  const { contents } = await getRepairCases({ filters: `slug[equals]${slug}` });
+  const post = contents?.[0];
+
+  if (!post) {
+    return { title: '修理事例 | Not Found' };
+  }
+  return {
+    title: `${post.title} | 修理事例`,
+    description: post.body?.slice(0, 80).replace(/<[^>]+>/g, '') ?? '',
+  };
+}
+
+// ───────────────────────────────────────
+// 🚨 Vercel ビルド回避のため、ここは同期関数で export default
+// ───────────────────────────────────────
 export default function RepairCaseDetailPageWrapper({ params }: { params: Params }) {
   return <RepairCaseDetailPage params={params} />;
 }
 
-// 🚀 非同期処理はラップされたこのコンポーネントで行う
+// ───────────────────────────────────────
+// 🚀 実際のフェッチ／レンダリングは非同期の内部コンポーネントで
+// ───────────────────────────────────────
 async function RepairCaseDetailPage({ params }: { params: Params }) {
   const { slug } = params;
   const { contents } = await getRepairCases({
     filters: `slug[equals]${slug}`,
   });
 
-  const post = contents?.[0];
+  const post = contents?.[0] as RepairCase | undefined;
   if (!post) {
     notFound();
   }
@@ -80,7 +99,8 @@ async function RepairCaseDetailPage({ params }: { params: Params }) {
             dangerouslySetInnerHTML={{ __html: post.body }}
           />
 
-          {post.tags && post.tags.length > 0 && (
+          {/* ↓ optional chaining によって tag が undefined の場合も安心 */}
+          {post.tags?.length ? (
             <div className="mt-8 pt-6 border-t">
               <div className="flex flex-wrap items-center gap-2">
                 <Tag size={16} className="text-gray-500" />
@@ -94,7 +114,7 @@ async function RepairCaseDetailPage({ params }: { params: Params }) {
                 ))}
               </div>
             </div>
-          )}
+          ) : null}
         </article>
       </main>
     </div>
