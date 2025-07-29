@@ -6,8 +6,6 @@ import { Calendar, Tag, Folder, ArrowLeft } from 'lucide-react';
 import type { Metadata } from 'next';
 import type { RepairCase } from '@/types/repair';
 
-// Next.js App Routerがページコンポーネントに渡すpropsの型を、規約に合わせて明示的に定義します。
-// これがVercelのビルドエラーを解決する鍵です。
 type Props = {
   params: {
     slug: string;
@@ -17,7 +15,6 @@ type Props = {
   };
 };
 
-// SSG 用パスを一括生成
 export async function generateStaticParams() {
   try {
     const { contents } = await getRepairCases({ limit: 1000 });
@@ -31,7 +28,6 @@ export async function generateStaticParams() {
   }
 }
 
-// ページメタデータ（SEO対応）
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = params;
   const { contents } = await getRepairCases({ filters: `slug[equals]${slug}` });
@@ -49,16 +45,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-// ───────────────────────────────────────
-// ✅ 最終修正：ラッパーを廃止し、単一のasyncサーバーコンポーネントとして定義
-// ───────────────────────────────────────
 export default async function RepairCaseDetailPage({ params }: Props) {
   const { slug } = params;
-  const { contents } = await getRepairCases({
-    filters: `slug[equals]${slug}`,
-  });
-
+  const { contents } = await getRepairCases({ filters: `slug[equals]${slug}` });
   const post = contents?.[0] as RepairCase | undefined;
+
   if (!post) {
     notFound();
   }
