@@ -2,19 +2,24 @@
 
 import { getRepairCases } from '@/libs/microcms';
 import { notFound } from 'next/navigation';
-import Link from 'next/link'; // Linkコンポーネントをインポート
+import Link from 'next/link';
 import { Calendar, Tag, Folder, ArrowLeft } from 'lucide-react';
 
-// generateStaticParams: 型定義は引数に直接書くのが安全です
+// generateStaticParams: Vercelで確実に型が解決されるように、よりシンプルな書き方に修正
 export async function generateStaticParams() {
   const { contents } = await getRepairCases({ limit: 1000 });
+
+  // nullチェックを追加して、より安全に
+  if (!contents) {
+    return [];
+  }
 
   return contents.map((post) => ({
     slug: post.slug,
   }));
 }
 
-// ページ関数：paramsの型を直書きして、型の問題を完全に回避します
+// ページコンポーネント: propsの型定義を、Vercelが誤解しない最も安全な形式に修正
 export default async function RepairCaseDetailPage({
   params,
 }: {
@@ -26,6 +31,7 @@ export default async function RepairCaseDetailPage({
     filters: `slug[equals]${slug}`,
   });
 
+  // 記事が見つからなかった場合は、404ページを表示
   if (!contents || contents.length === 0) {
     notFound();
   }
@@ -36,8 +42,10 @@ export default async function RepairCaseDetailPage({
     <div className="bg-white min-h-screen">
       <main className="container mx-auto px-4 py-8 sm:py-12">
         <article className="max-w-3xl mx-auto">
-          {/* <a>タグを<Link>コンポーネントに修正 */}
-          <Link href="/repairs" className="inline-flex items-center gap-2 text-blue-600 hover:underline mb-6 text-sm">
+          <Link
+            href="/repairs"
+            className="inline-flex items-center gap-2 text-blue-600 hover:underline mb-6 text-sm"
+          >
             <ArrowLeft size={16} />
             修理事例一覧へ戻る
           </Link>
@@ -71,9 +79,7 @@ export default async function RepairCaseDetailPage({
 
           <div
             className="prose lg:prose-lg max-w-none"
-            dangerouslySetInnerHTML={{
-              __html: post.body,
-            }}
+            dangerouslySetInnerHTML={{ __html: post.body }}
           />
 
           {post.tags && post.tags.length > 0 && (
@@ -81,7 +87,10 @@ export default async function RepairCaseDetailPage({
               <div className="flex flex-wrap items-center gap-2">
                 <Tag size={16} className="text-gray-500" />
                 {post.tags.map((tag) => (
-                  <span key={tag.id} className="bg-gray-200 text-gray-700 text-xs font-medium px-2.5 py-1 rounded-full">
+                  <span
+                    key={tag.id}
+                    className="bg-gray-200 text-gray-700 text-xs font-medium px-2.5 py-1 rounded-full"
+                  >
                     {tag.name}
                   </span>
                 ))}
