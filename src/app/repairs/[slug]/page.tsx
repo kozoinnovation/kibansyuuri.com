@@ -10,31 +10,32 @@ import type { RepairCase } from '@/types/repair';
 type Params = { slug: string };
 
 // SSG 用パスを一括生成
-export async function generateStaticParams() {
+export async function generateStaticParams(): Promise<Params[]> {
   const { contents } = await getRepairCases({ limit: 1000 });
   if (!contents || contents.length === 0) return [];
   return contents.map((post) => ({ slug: post.slug }));
 }
 
-// ページメタデータ（SEO対応）
-export async function generateMetadata({ params }: { params: Params }): Promise<Metadata> {
+// SEO 用メタデータ
+export async function generateMetadata({
+  params,
+}: {
+  params: Params;
+}): Promise<Metadata> {
   const { slug } = params;
   const { contents } = await getRepairCases({ filters: `slug[equals]${slug}` });
   const post = contents?.[0];
   if (!post) {
-    return {
-      title: '修理事例 | Not Found',
-      description: '該当する修理事例が見つかりませんでした。',
-    };
+    return { title: '修理事例 | Not Found', description: '記事が見つかりませんでした。' };
   }
-  const plain = post.body?.replace(/<[^>]+>/g, '') ?? '';
+  const text = post.body?.replace(/<[^>]+>/g, '') ?? '';
   return {
     title: `${post.title} | 修理事例`,
-    description: plain.slice(0, 120),
+    description: text.slice(0, 120),
   };
 }
 
-// 🚨 Vercel ビルド回避のため、ここだけ any でラップ
+// 🚨 Vercel ビルド回避のため、ここだけ any で受ける
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export default function RepairCaseDetailPageWrapper(props: any) {
   return <RepairCaseDetailPage {...props} />;
