@@ -6,26 +6,19 @@ import { Calendar, Tag, Folder, ArrowLeft } from 'lucide-react';
 import type { Metadata } from 'next';
 import type { RepairCase } from '@/types/repair';
 
-// ✅ 型定義（Next.jsの規定通りの PageProps に合わせる）
-type PageProps = {
-  params: { slug: string };
-};
-
 // ✅ SSG用パス生成
 export async function generateStaticParams() {
-  try {
-    const { contents } = await getRepairCases({ limit: 1000 });
-    return contents.map((post) => ({ slug: post.slug }));
-  } catch (err) {
-    console.error('Failed to generate static params:', err);
-    return [];
-  }
+  const { contents } = await getRepairCases({ limit: 1000 });
+  return contents.map((post) => ({ slug: post.slug }));
 }
 
-// ✅ SEO用メタデータ生成
-export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
-  const { slug } = params;
-  const { contents } = await getRepairCases({ filters: `slug[equals]${slug}` });
+// ✅ SEO用メタデータ生成（型を直接記述）
+export async function generateMetadata({
+  params,
+}: {
+  params: { slug: string };
+}): Promise<Metadata> {
+  const { contents } = await getRepairCases({ filters: `slug[equals]${params.slug}` });
   const post = contents?.[0];
   if (!post) {
     return {
@@ -35,12 +28,16 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   }
   return {
     title: `${post.title} | 修理事例`,
-    description: post.body?.slice(0, 120).replace(/<[^>]+>/g, '') ?? '修理事例の詳細ページです。',
+    description: post.body?.slice(0, 120).replace(/<[^>]+>/g, '') ?? '',
   };
 }
 
-// ✅ 本体ページ
-export default async function RepairCaseDetailPage({ params }: PageProps) {
+// ✅ 本体ページ（こちらは型定義ありでOK）
+export default async function RepairCaseDetailPage({
+  params,
+}: {
+  params: { slug: string };
+}) {
   const { slug } = params;
   const { contents } = await getRepairCases({
     filters: `slug[equals]${slug}`,
