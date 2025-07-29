@@ -90,7 +90,7 @@ async function RepairCaseDetailPage({ params }: { params: Params }) {
 
 // SSG 用パスを生成
 export async function generateStaticParams() {
-  const { contents } = await getRepairCases({ limit: 1000 });
+  const { contents } = await getRepairCases({ limit: 100 });
   if (!contents) return [];
   return contents.map((post) => ({ slug: post.slug }));
 }
