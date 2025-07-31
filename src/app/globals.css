@@ -1,136 +1,73 @@
-/* 1. Tailwind CSSのディレクティブ */
+/* src/app/globals.css */
+
+/*--------------------------------------------------
+  1. Tailwind のプリセット
+--------------------------------------------------*/
 @tailwind base;
 @tailwind components;
-@tailwind utilities;
 
-/* 2. カラースキームとCSS変数（light/dark対応） */
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-  --link-color: #2563eb;
-}
-
-.dark {
-  --background: #0a0a0a;
-  --foreground: #ededed;
-  --link-color: #60a5fa;
-}
-
-html,
+/*--------------------------------------------------
+  2. ベーススタイルカスタマイズ
+--------------------------------------------------*/
 body {
-  max-width: 100vw;
-  overflow-x: hidden;
-  scroll-behavior: smooth;
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
-  color: var(--foreground);
-  background-color: var(--background);
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  @apply bg-gray-100 text-gray-800 leading-relaxed;
 }
 
-* {
-  box-sizing: border-box;
-  padding: 0;
-  margin: 0;
-}
-
-a {
-  color: var(--link-color);
-  text-decoration: none;
-}
-
-button {
-  cursor: pointer;
-  background: none;
-  border: none;
-}
-
-input, textarea, select {
-  font: inherit;
-  background: transparent;
-  color: inherit;
-  border: none;
-  outline: none;
-}
-
-::selection {
-  background: #2563eb33;
-}
-
-/* 3. メディアクエリ補足（古いブラウザ用） */
-@media (prefers-color-scheme: dark) {
-  html {
-    color-scheme: dark;
-  }
-}
-
-/* 4. prose 用のスタイル */
+/*--------------------------------------------------
+  3. 記事本文（Markdown）のスタイル
+--------------------------------------------------*/
 .prose {
-  color: var(--foreground);
+  @apply prose-sm sm:prose-base lg:prose-lg prose-slate;
   max-width: 100%;
 }
 
-.prose h2 {
-  font-size: 1.5em;
-  margin-top: 2em;
-  margin-bottom: 1em;
-  border-bottom: 1px solid #e5e7eb;
-  padding-bottom: 0.5em;
-  font-weight: 600;
+.prose img {
+  @apply rounded-xl shadow-md my-4;
 }
 
+.prose h1,
+.prose h2,
 .prose h3 {
-  font-size: 1.25em;
-  margin-top: 1.5em;
-  margin-bottom: 1em;
-  font-weight: 600;
-}
-
-.prose p {
-  line-height: 1.8;
-  margin-bottom: 1em;
+  @apply text-gray-900 font-semibold;
 }
 
 .prose a {
-  color: var(--link-color);
-  text-decoration: underline;
+  @apply text-blue-600 underline hover:text-blue-800;
 }
 
 .prose ul,
 .prose ol {
-  padding-left: 1.5em;
-  margin-bottom: 1em;
+  @apply list-inside;
 }
 
-.prose ul {
-  list-style: disc;
+.prose blockquote {
+  @apply border-l-4 border-gray-300 pl-4 italic text-gray-700;
 }
 
-.prose ol {
-  list-style: decimal;
+/*--------------------------------------------------
+  4. フィルターUIなどに使うカスタムユーティリティ
+--------------------------------------------------*/
+.btn {
+  @apply px-4 py-2 rounded-lg font-medium transition-all duration-200;
 }
 
-.prose li {
-  margin-bottom: 0.5em;
+.btn-primary {
+  @apply bg-blue-600 text-white hover:bg-blue-700;
 }
 
-.prose img {
-  border-radius: 0.5rem;
-  margin-top: 1.5em;
-  margin-bottom: 1.5em;
-  max-width: 100%;
-  height: auto;
+.badge {
+  @apply inline-block text-xs px-2 py-1 rounded-full font-semibold;
 }
 
-/* 5. dark mode 専用の prose */
-.dark .prose {
-  color: #e5e5e5;
+.badge-blue {
+  @apply bg-blue-100 text-blue-700;
 }
 
-.dark .prose h2 {
-  border-bottom-color: #2a2a2a;
+.badge-green {
+  @apply bg-green-100 text-green-700;
 }
 
-.dark .prose a {
-  color: var(--link-color);
-}
+/*--------------------------------------------------
+  5. Tailwind のユーティリティ（ここより下に独自ユーティリティを追加）
+--------------------------------------------------*/
+@tailwind utilities;

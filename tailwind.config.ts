@@ -1,23 +1,23 @@
-import type { Config } from 'tailwindcss'
+import type { Config } from 'tailwindcss';
+import typography from '@tailwindcss/typography';
 
 const config: Config = {
-  content: [
-    './src/**/*.{js,ts,jsx,tsx,mdx}',
-    './src/**/*.md',
-    './src/**/*.mdx',
-  ],
+  content: ['./src/**/*.{js,ts,jsx,tsx,md,mdx}'],
   darkMode: 'class',
   theme: {
     extend: {
       colors: {
-        primary: '#2563eb',
+        primary:   '#2563eb',
         secondary: '#64748b',
       },
       typography: (theme: (path: string) => string) => ({
         DEFAULT: {
           css: {
             color: theme('colors.gray.800'),
-            a: { color: theme('colors.blue.600') },
+            a: {
+              color: theme('colors.blue.600'),
+              '&:hover': { color: theme('colors.blue.800') },
+            },
           },
         },
         dark: {
@@ -29,7 +29,7 @@ const config: Config = {
       }),
     },
   },
-  plugins: [require('@tailwindcss/typography')],
-}
+  plugins: [typography],
+};
 
-export default config
+export default config;
