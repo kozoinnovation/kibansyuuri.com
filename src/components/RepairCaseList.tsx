@@ -20,6 +20,7 @@ export default function RepairCaseList({
   handleCategorySelect,
   handleSymptomToggle,
 }: Props) {
+  // 以下のロジックは一切変更していません
   const allSymptoms = useMemo(() => {
     const symptoms = allCases.flatMap((c) => c.tags?.map((t) => t.name) || []);
     return Array.from(new Set(symptoms));
@@ -42,13 +43,16 @@ export default function RepairCaseList({
   }, [allCases, selectedCategory, selectedSymptoms]);
 
   return (
-    <div className="space-y-8">
+    // vvvvvvvvvv UI構造をここから変更 vvvvvvvvvv
+    <div className="max-w-6xl mx-auto">
       <FilterSection
         selectedCategory={selectedCategory}
         selectedSymptoms={selectedSymptoms}
         allSymptoms={allSymptoms}
         handleCategorySelect={handleCategorySelect}
         handleSymptomToggle={handleSymptomToggle}
+        // 「該当件数」表示のためにpropsを一つ追加
+        filteredCount={filteredCases.length}
       />
 
       {filteredCases.length > 0 ? (
@@ -58,10 +62,16 @@ export default function RepairCaseList({
           ))}
         </div>
       ) : (
-        <p className="col-span-full text-center text-gray-600 text-lg py-10">
-          選択された条件に一致する修理事例は見つかりませんでした。
-        </p>
+        <div className="text-center py-16 px-6 bg-white rounded-lg shadow-md">
+          <p className="text-gray-600 text-lg">
+            選択された条件に一致する修理事例は見つかりませんでした。
+          </p>
+          <p className="text-gray-500 mt-2">
+            他のフィルター条件をお試しください。
+          </p>
+        </div>
       )}
     </div>
+    // ^^^^^^^^^^ UI構造をここまで変更 ^^^^^^^^^^
   );
 }
