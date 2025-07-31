@@ -107,7 +107,6 @@ export default function RepairExamplesPage() {
         <FilterSection
           selectedCategory={selectedCategory}
           selectedSymptoms={selectedSymptoms}
-          allSymptoms={allSymptoms}
           handleCategorySelect={handleCategorySelect}
           handleSymptomToggle={handleSymptomToggle}
           filteredCount={filteredExamples.length} // ← この行を追加しました

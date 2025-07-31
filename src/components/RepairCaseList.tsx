@@ -1,3 +1,5 @@
+// src/components/RepairCaseList.tsx
+
 'use client';
 
 import React, { useMemo } from 'react';
@@ -20,38 +22,36 @@ export default function RepairCaseList({
   handleCategorySelect,
   handleSymptomToggle,
 }: Props) {
-  // 以下のロジックは一切変更していません
-  const allSymptoms = useMemo(() => {
-    const symptoms = allCases.flatMap((c) => c.tags?.map((t) => t.name) || []);
-    return Array.from(new Set(symptoms));
-  }, [allCases]);
-
+  // allSymptomsを計算するロジックはFilterSectionに移動したため不要です
+  
   const filteredCases = useMemo(() => {
     return allCases.filter((repair) => {
       const categoryMatch =
         selectedCategory === 'all' ||
         repair.categories?.some((cat) => cat.slug === selectedCategory);
 
+      // vvvvvvvvvvvvvvvv ここから修正 vvvvvvvvvvvvvvvv
+      // 絞り込みロジックを新しいsymptomsフィールドに対応させます
       const symptomsMatch =
         selectedSymptoms.size === 0 ||
-        Array.from(selectedSymptoms).every((symptom) =>
-          repair.tags?.some((tag) => tag.name === symptom)
+        Array.from(selectedSymptoms).every((selectedSymptomName) =>
+          repair.symptoms?.some((symptom) => symptom.name === selectedSymptomName)
         );
-
+      
+      // フィルター条件を返すreturn文を追加
       return categoryMatch && symptomsMatch;
+      // ^^^^^^^^^^^^^^^^^^ ここまで修正 ^^^^^^^^^^^^^^^^^^
     });
   }, [allCases, selectedCategory, selectedSymptoms]);
 
   return (
-    // vvvvvvvvvv UI構造をここから変更 vvvvvvvvvv
     <div className="max-w-6xl mx-auto">
       <FilterSection
         selectedCategory={selectedCategory}
         selectedSymptoms={selectedSymptoms}
-        allSymptoms={allSymptoms}
+        // allSymptomsは不要になったため削除
         handleCategorySelect={handleCategorySelect}
         handleSymptomToggle={handleSymptomToggle}
-        // 「該当件数」表示のためにpropsを一つ追加
         filteredCount={filteredCases.length}
       />
 
@@ -72,6 +72,5 @@ export default function RepairCaseList({
         </div>
       )}
     </div>
-    // ^^^^^^^^^^ UI構造をここまで変更 ^^^^^^^^^^
   );
 }

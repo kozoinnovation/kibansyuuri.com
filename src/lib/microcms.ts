@@ -1,5 +1,8 @@
+// src/lib/microcms.ts
+
 import { createClient } from 'microcms-js-sdk';
 import type { RepairCase } from '@/types/repair';
+import type { Symptom } from '@/types/symptom'; // Symptom型をインポート
 
 export const client = createClient({
   serviceDomain: process.env.NEXT_PUBLIC_MICROCMS_SERVICE_DOMAIN || '',
@@ -26,7 +29,7 @@ export const getRepairCases = async ({
   });
 };
 
-// 個別記事取得 (slug指定) - 新規追加
+// 個別記事取得 (slug指定)
 export const getRepairCaseBySlug = async (
   slug: string
 ): Promise<RepairCase | null> => {
@@ -43,3 +46,15 @@ export const getRepairCaseBySlug = async (
     return null;
   }
 };
+
+// vvvvvvvvvvvvvvvv ここから追加 vvvvvvvvvvvvvvvv
+// microCMSから症状一覧を取得する関数
+export const getSymptoms = async (): Promise<{ contents: Symptom[] }> => {
+  return await client.get({
+    endpoint: 'symptoms', // microCMSで設定したAPIエンドポイント名
+    queries: {
+      limit: 100, // 必要に応じて上限を調整
+    },
+  });
+};
+// ^^^^^^^^^^^^^^^^^^ ここまで追加 ^^^^^^^^^^^^^^^^^^

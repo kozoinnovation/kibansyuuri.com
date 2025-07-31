@@ -1,14 +1,15 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { getSymptoms } from '@/lib/microcms';
+import type { Symptom } from '@/types/symptom';
 
 type Props = {
   selectedCategory: string;
   selectedSymptoms: Set<string>;
-  allSymptoms: string[];
   handleCategorySelect: (category: string) => void;
   handleSymptomToggle: (symptom: string) => void;
-  filteredCount: number; // UI再現のために追加
+  filteredCount: number;
 };
 
 const categories = [
@@ -21,15 +22,25 @@ const categories = [
 export default function FilterSection({
   selectedCategory,
   selectedSymptoms,
-  allSymptoms,
   handleCategorySelect,
   handleSymptomToggle,
   filteredCount,
 }: Props) {
-  const uniqueSymptoms = React.useMemo(() => [...new Set(allSymptoms)], [allSymptoms]);
+  const [symptoms, setSymptoms] = useState<Symptom[]>([]);
+
+  useEffect(() => {
+    const fetchSymptoms = async () => {
+      try {
+        const { contents } = await getSymptoms();
+        setSymptoms(contents);
+      } catch (error) {
+        console.error('Failed to fetch symptoms:', error);
+      }
+    };
+    fetchSymptoms();
+  }, []);
 
   return (
-    // vvvvvvvvvv UI構造をここから変更 vvvvvvvvvv
     <section className="bg-white p-4 sm:p-6 rounded-xl shadow-md mb-8">
       {/* カテゴリーフィルター */}
       <div className="mb-6">
@@ -55,22 +66,22 @@ export default function FilterSection({
       <div className="mb-6">
         <h3 className="text-lg font-semibold text-gray-800 mb-3 pl-1">症状</h3>
         <div className="flex flex-wrap gap-3">
-          {uniqueSymptoms.map((symptom, index) => (
+          {symptoms.map((symptom) => (
             <label
-              key={`${symptom}-${index}`}
+              key={symptom.id}
               className={`flex items-center space-x-2 px-3 py-1.5 rounded-full border cursor-pointer transition-colors duration-200 ${
-                selectedSymptoms.has(symptom)
+                selectedSymptoms.has(symptom.name)
                   ? 'bg-blue-500 text-white border-blue-500'
                   : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-100'
               }`}
             >
               <input
                 type="checkbox"
-                checked={selectedSymptoms.has(symptom)}
-                onChange={() => handleSymptomToggle(symptom)}
-                className="absolute opacity-0 w-0 h-0" // チェックボックスを完全に隠す
+                checked={selectedSymptoms.has(symptom.name)}
+                onChange={() => handleSymptomToggle(symptom.name)}
+                className="absolute opacity-0 w-0 h-0"
               />
-              <span>{symptom}</span>
+              <span>{symptom.name}</span>
             </label>
           ))}
         </div>
@@ -78,9 +89,9 @@ export default function FilterSection({
 
       {/* 該当件数表示 */}
       <div className="text-right text-sm sm:text-base text-gray-600 font-medium pt-4 border-t border-gray-200">
-        <span className="text-blue-500 text-lg sm:text-xl font-bold">{filteredCount}</span> 件の事例が見つかりました
+        <span className="text-blue-500 text-lg sm:text-xl font-bold">{filteredCount}</span>{' '}
+        件の事例が見つかりました
       </div>
     </section>
-    // ^^^^^^^^^^ UI構造をここまで変更 ^^^^^^^^^^
   );
 }
