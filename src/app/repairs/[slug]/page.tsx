@@ -1,89 +1,66 @@
-import { getRepairCases, getRepairCaseBySlug } from '@/lib/microcms';
+import { getRepairCases } from '@/lib/microcms';
 import { notFound } from 'next/navigation';
+import { Calendar, Tag, Folder, ArrowLeft } from 'lucide-react';
 import Image from 'next/image';
-import type { RepairCase } from '@/types/repair';
+import Link from 'next/link';
 
-// ✅ generateStaticParams：Next.jsが要求する正しい形式
-export async function generateStaticParams(): Promise<{ params: { slug: string } }[]> {
-  const { contents } = await getRepairCases({ limit: 9999 });
-
-  return contents
-    .filter((post) => post.slug)
-    .map((post) => ({
-      params: {
-        slug: post.slug,
-      },
-    }));
-}
-
-// ✅ dynamic routingを制限（SSG構成として明示）
-export const dynamicParams = false;
-
-// ✅ 型定義：Next.jsの構造に完全準拠
 type Props = {
   params: { slug: string };
-  searchParams?: { [key: string]: string | string[] };
 };
 
-// ✅ asyncコンポーネントでmicroCMSからデータ取得＆表示
-async function DetailPageContent({ params }: { params: { slug: string } }) {
-  const post: RepairCase | null = await getRepairCaseBySlug(params.slug);
+export default async function Page({ params }: Props) {
+  const { slug } = params;
+  const { contents } = await getRepairCases({ limit: 100 });
+  const repair = contents.find((item) => item.slug === slug);
 
-  if (!post) {
+  if (!repair) {
     notFound();
   }
 
   return (
-    <article className="bg-white rounded-lg shadow-lg overflow-hidden">
-      {post.image && (
+    <div className="prose prose-neutral max-w-3xl mx-auto p-4">
+      <Link href="/repairs" className="flex items-center mb-4 text-sm text-gray-600 hover:underline">
+        <ArrowLeft className="w-4 h-4 mr-1" /> 修理事例一覧に戻る
+      </Link>
+      <h1>{repair.title}</h1>
+
+      {repair.mainImage?.url && (
         <Image
-          src={`${post.image.url}?w=1200&auto=format&fit=max`}
-          alt={post.title}
-          width={1200}
-          height={630}
-          className="w-full h-auto"
-          priority
+          src={repair.mainImage.url}
+          alt="Repair image"
+          width={repair.mainImage.width ?? 800}
+          height={repair.mainImage.height ?? 600}
+          className="rounded-lg my-4"
         />
       )}
-      <div className="p-6 sm:p-10">
-        <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
-          {post.title}
-        </h1>
-        <div className="flex flex-wrap items-center gap-4 mb-6 text-sm text-gray-600">
-          <span>
-            公開日: {new Date(post.publishedAt).toLocaleDateString('ja-JP')}
-          </span>
-          {post.categories?.map((cat) => (
-            <span
-              key={cat.id}
-              className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full"
-            >
-              {cat.name}
-            </span>
-          ))}
+
+      <div className="flex gap-4 text-sm text-gray-500 my-2">
+        <div className="flex items-center gap-1">
+          <Calendar className="w-4 h-4" />
+          {new Date(repair.publishedAt).toLocaleDateString()}
         </div>
-        <div
-          className="prose prose-lg max-w-none"
-          dangerouslySetInnerHTML={{ __html: post.body }}
-        />
-        {post.tags?.map((tag) => (
-          <div key={tag.id} className="mt-8 pt-6 border-t">
-            {/* Tag display logic here */}
+
+        {!!repair.categories?.length && (
+          <div className="flex items-center gap-1">
+            <Folder className="w-4 h-4" />
+            {repair.categories.map((cat: { name: string }) => cat.name).join(', ')}
           </div>
-        ))}
+        )}
+
+        {!!repair.tags?.length && (
+          <div className="flex items-center gap-1">
+            <Tag className="w-4 h-4" />
+            {repair.tags.map((tag: { name: string }) => tag.name).join(', ')}
+          </div>
+        )}
       </div>
-    </article>
+
+      <div dangerouslySetInnerHTML={{ __html: repair.body ?? '' }} />
+    </div>
   );
 }
 
-// ✅ default exportは同期関数。asyncを中で呼ぶ構造
-export default function RepairCaseDetailPageWrapper({ params }: Props) {
-  return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-4xl mx-auto p-4 sm:p-6 lg:p-8">
-        {/* @ts-expect-error Async Server Component */}
-        <DetailPageContent params={params} />
-      </div>
-    </div>
-  );
+export async function generateStaticParams() {
+  const { contents } = await getRepairCases({ limit: 100 });
+  return contents.map((item) => ({ slug: item.slug }));
 }

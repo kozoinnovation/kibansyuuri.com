@@ -1,8 +1,6 @@
 'use client';
 
-// vvvvvvvvv ここを修正しました vvvvvvvvv
-import React, { useState, useEffect } from 'react'; // 不要な useMemo を削除
-// ^^^^^^^^^ ここを修正しました ^^^^^^^^^
+import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import type { RepairCase } from '@/types/repair';
 
@@ -10,9 +8,9 @@ const RepairCard = ({ repairCase }: { repairCase: RepairCase }) => (
   <div className="bg-white rounded-lg shadow-md overflow-hidden group">
     <a href={`/repairs/${repairCase.slug}`} className="block">
       <div className="relative">
-        {repairCase.image?.url ? (
+        {repairCase.mainImage?.url ? (
           <Image
-            src={`${repairCase.image.url}?w=400&auto=format&fit=max`}
+            src={`${repairCase.mainImage.url}?w=400&auto=format&fit=max`}
             alt={repairCase.title}
             width={400}
             height={250}
@@ -52,8 +50,7 @@ type Props = {
 };
 
 export default function ClientPage({ initialRepairs, totalCount }: Props) {
-  const [filteredExamples, setFilteredExamples] =
-    useState<RepairCase[]>(initialRepairs);
+  const [filteredExamples, setFilteredExamples] = useState<RepairCase[]>(initialRepairs);
 
   useEffect(() => {
     setFilteredExamples(initialRepairs);

@@ -1,10 +1,10 @@
-export type RepairCase = {
+export interface RepairCase {
   id: string;
   slug: string;
   title: string;
-  excerpt: string;
+  excerpt?: string;
   body: string;
-  image?: {
+  mainImage?: {
     url: string;
     width?: number;
     height?: number;
@@ -23,4 +23,4 @@ export type RepairCase = {
   updatedAt: string;
   publishedAt: string;
   revisedAt: string;
-};
+}

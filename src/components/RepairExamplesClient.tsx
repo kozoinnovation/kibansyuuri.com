@@ -1,66 +1,103 @@
 'use client';
 
-import React, { useState } from 'react';
-import FilterSection from './FilterSection';
-import RepairCaseCard from './RepairCaseCard';
+import React, { useState, useEffect, useMemo } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import RepairCaseList from '@/components/RepairCaseList';
+import { getRepairCases } from '@/lib/microcms';
 import type { RepairCase } from '@/types/repair';
 
-export default function RepairExamplesClient({
-  allRepairExamples,
-}: {
-  allRepairExamples: RepairCase[];
-}) {
-  const [selectedCategory, setSelectedCategory] = useState('all');
-  const [selectedSymptoms, setSelectedSymptoms] = useState<Set<string>>(
-    new Set()
-  );
+export default function RepairExamplesClient() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
 
-  const allSymptoms = Array.from(
-    new Set(allRepairExamples.flatMap((ex) => ex.tags?.map((tag) => tag.name) || []))
-  );
+  const selectedCategory = searchParams.get('category') || 'all';
+  const selectedSymptoms = useMemo(() => {
+    const symptomsParam = searchParams.get('symptoms');
+    return new Set<string>(symptomsParam ? symptomsParam.split(',') : []);
+  }, [searchParams]);
 
-  const filteredExamples = allRepairExamples.filter((example) => {
-    const categoryMatch =
-      selectedCategory === 'all' ||
-      example.categories?.some((cat) => cat.slug === selectedCategory);
-    const symptomsMatch =
-      selectedSymptoms.size === 0 ||
-      Array.from(selectedSymptoms).every((symptom) =>
-        example.tags?.some((tag) => tag.name === symptom)
-      );
-    return categoryMatch && symptomsMatch;
-  });
+  const [allRepairExamples, setAllRepairExamples] = useState<RepairCase[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleSymptomToggle = (symptom: string) => {
-    const newSet = new Set(selectedSymptoms);
-    if (newSet.has(symptom)) {
-      newSet.delete(symptom);
+  useEffect(() => {
+    const fetchAndSetRepairExamples = async () => {
+      setIsLoading(true);
+      setError(null);
+      try {
+        const { contents } = await getRepairCases({ limit: 9999 });
+        setAllRepairExamples(contents);
+      } catch (e) {
+        const errorMessage = e instanceof Error ? e.message : String(e);
+        setError(errorMessage);
+        console.error('Failed to fetch repair examples from microCMS:', e);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchAndSetRepairExamples();
+  }, []);
+
+  const handleCategorySelect = (category: string) => {
+    const newSearchParams = new URLSearchParams(searchParams.toString());
+    if (category === 'all') {
+      newSearchParams.delete('category');
     } else {
-      newSet.add(symptom);
+      newSearchParams.set('category', category);
     }
-    setSelectedSymptoms(newSet);
+    newSearchParams.delete('symptoms');
+    router.push(`?${newSearchParams.toString()}`);
   };
 
+  const handleSymptomToggle = (symptom: string) => {
+    const newSearchParams = new URLSearchParams(searchParams.toString());
+    const currentSymptoms = new Set<string>(
+      selectedSymptoms ? Array.from(selectedSymptoms) : []
+    );
+
+    if (currentSymptoms.has(symptom)) {
+      currentSymptoms.delete(symptom);
+    } else {
+      currentSymptoms.add(symptom);
+    }
+
+    if (currentSymptoms.size > 0) {
+      newSearchParams.set('symptoms', Array.from(currentSymptoms).join(','));
+    } else {
+      newSearchParams.delete('symptoms');
+    }
+    router.push(`?${newSearchParams.toString()}`);
+  };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div>読み込み中...</div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div>エラーが発生しました: {error}</div>
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen bg-gray-100 font-inter p-4 sm:p-6 lg:p-8">
+    <div className="min-h-screen bg-gray-100 p-4 sm:p-6 lg:p-8">
       <header className="text-center mb-8">
-        <h1 className="text-3xl sm:text-4xl font-bold text-gray-800 mb-2">
-          修理事例一覧
-        </h1>
+        <h1 className="text-3xl font-bold">修理事例一覧</h1>
       </header>
       <div className="max-w-6xl mx-auto bg-white p-4 sm:p-6 rounded-xl shadow-lg">
-        <FilterSection
+        <RepairCaseList
+          allCases={allRepairExamples}
           selectedCategory={selectedCategory}
           selectedSymptoms={selectedSymptoms}
-          allSymptoms={allSymptoms}
-          handleCategorySelect={setSelectedCategory}
+          handleCategorySelect={handleCategorySelect}
           handleSymptomToggle={handleSymptomToggle}
         />
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
-          {filteredExamples.map((post) => (
-            <RepairCaseCard key={post.id} post={post} />
-          ))}
-        </div>
       </div>
     </div>
   );

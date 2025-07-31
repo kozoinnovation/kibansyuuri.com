@@ -21,9 +21,9 @@ const RepairCaseCard: React.FC<Props> = ({ post }) => {
       className="block bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow duration-200 p-4 h-full flex flex-col"
     >
       <div className="flex-grow">
-        {post.image?.url ? (
+        {post.mainImage?.url ? (
           <Image
-            src={post.image.url}
+            src={post.mainImage.url}
             alt={post.title}
             width={400}
             height={240}
