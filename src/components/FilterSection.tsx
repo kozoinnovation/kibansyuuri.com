@@ -30,7 +30,7 @@ export default function FilterSection({
         const { contents } = await getSymptoms();
         setSymptoms(contents);
       } catch (error) {
-        console.error('症状データの取得に失敗しました:', error);
+        console.error('❌ 症状データの取得に失敗しました:', error);
       }
     };
     fetchSymptoms();
@@ -41,9 +41,13 @@ export default function FilterSection({
     const fetchCategories = async () => {
       try {
         const { contents } = await getCategories();
-        setCategories([{ id: 'all', name: '全て', slug: 'all' }, ...contents]);
+        console.log('✅ カテゴリーデータ取得:', contents);
+        const safeCategories = contents.filter(
+          (cat): cat is Category => typeof cat.name === 'string' && typeof cat.slug === 'string'
+        );
+        setCategories([{ id: 'all', name: '全て', slug: 'all' }, ...safeCategories]);
       } catch (error) {
-        console.error('カテゴリデータの取得に失敗しました:', error);
+        console.error('❌ カテゴリーデータの取得に失敗しました:', error);
       }
     };
     fetchCategories();
@@ -65,7 +69,7 @@ export default function FilterSection({
                   : 'bg-gray-200 text-gray-700 border-transparent hover:bg-gray-300'
               }`}
             >
-              {category.name}
+              {category.name || '（名前未設定）'}
             </button>
           ))}
         </div>
@@ -90,7 +94,7 @@ export default function FilterSection({
                 onChange={() => handleSymptomToggle(symptom.name)}
                 className="absolute opacity-0 w-0 h-0"
               />
-              <span>{symptom.name}</span>
+              <span>{symptom.name || '（名前未設定）'}</span>
             </label>
           ))}
         </div>
