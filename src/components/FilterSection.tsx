@@ -1,8 +1,9 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { getSymptoms } from '@/lib/microcms';
+import { getSymptoms, getCategories } from '@/lib/microcms';
 import type { Symptom } from '@/types/symptom';
+import type { Category } from '@/types/category';
 
 type Props = {
   selectedCategory: string;
@@ -12,13 +13,6 @@ type Props = {
   filteredCount: number;
 };
 
-const categories = [
-  { slug: 'all', label: '全て' },
-  { slug: 'iphone', label: 'iPhone基板修理' },
-  { slug: 'android', label: 'Android基板修理' },
-  { slug: 'pc_other', label: 'PC/iPad/その他' },
-];
-
 export default function FilterSection({
   selectedCategory,
   selectedSymptoms,
@@ -27,17 +21,32 @@ export default function FilterSection({
   filteredCount,
 }: Props) {
   const [symptoms, setSymptoms] = useState<Symptom[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
 
+  // CMSから症状一覧を取得
   useEffect(() => {
     const fetchSymptoms = async () => {
       try {
         const { contents } = await getSymptoms();
         setSymptoms(contents);
       } catch (error) {
-        console.error('Failed to fetch symptoms:', error);
+        console.error('症状データの取得に失敗しました:', error);
       }
     };
     fetchSymptoms();
+  }, []);
+
+  // CMSからカテゴリ一覧を取得
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const { contents } = await getCategories();
+        setCategories([{ id: 'all', name: '全て', slug: 'all' }, ...contents]);
+      } catch (error) {
+        console.error('カテゴリデータの取得に失敗しました:', error);
+      }
+    };
+    fetchCategories();
   }, []);
 
   return (
@@ -56,7 +65,7 @@ export default function FilterSection({
                   : 'bg-gray-200 text-gray-700 border-transparent hover:bg-gray-300'
               }`}
             >
-              {category.label}
+              {category.name}
             </button>
           ))}
         </div>
@@ -87,7 +96,7 @@ export default function FilterSection({
         </div>
       </div>
 
-      {/* 該当件数表示 */}
+      {/* 件数表示 */}
       <div className="text-right text-sm sm:text-base text-gray-600 font-medium pt-4 border-t border-gray-200">
         <span className="text-blue-500 text-lg sm:text-xl font-bold">{filteredCount}</span>{' '}
         件の事例が見つかりました
