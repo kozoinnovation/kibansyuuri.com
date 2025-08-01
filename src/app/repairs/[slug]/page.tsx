@@ -1,66 +1,54 @@
-import { getRepairCases } from '@/lib/microcms';
+import { getRepairCase, getRepairCases } from '@/lib/microcms';
 import { notFound } from 'next/navigation';
-import { Calendar, Tag, Folder, ArrowLeft } from 'lucide-react';
+import { Folder } from 'lucide-react';
 import Image from 'next/image';
-import Link from 'next/link';
+
+export async function generateStaticParams() {
+  const { contents } = await getRepairCases({ fields: ['slug'] });
+  const paths = contents.map((post) => ({ slug: post.slug }));
+  return [...paths];
+}
 
 type Props = {
-  params: { slug: string };
+  params: {
+    slug: string;
+  };
 };
 
-export default async function Page({ params }: Props) {
+export default async function RepairCasePage({ params }: Props) {
   const { slug } = params;
-  const { contents } = await getRepairCases({ limit: 100 });
-  const repair = contents.find((item) => item.slug === slug);
+  const repair = await getRepairCase(slug);
 
   if (!repair) {
     notFound();
   }
 
   return (
-    <div className="prose prose-neutral max-w-3xl mx-auto p-4">
-      <Link href="/repairs" className="flex items-center mb-4 text-sm text-gray-600 hover:underline">
-        <ArrowLeft className="w-4 h-4 mr-1" /> 修理事例一覧に戻る
-      </Link>
-      <h1>{repair.title}</h1>
-
-      {repair.mainImage?.url && (
-        <Image
-          src={repair.mainImage.url}
-          alt="Repair image"
-          width={repair.mainImage.width ?? 800}
-          height={repair.mainImage.height ?? 600}
-          className="rounded-lg my-4"
-        />
-      )}
-
-      <div className="flex gap-4 text-sm text-gray-500 my-2">
-        <div className="flex items-center gap-1">
-          <Calendar className="w-4 h-4" />
-          {new Date(repair.publishedAt).toLocaleDateString()}
-        </div>
-
-        {!!repair.categories?.length && (
-          <div className="flex items-center gap-1">
+    <article className="max-w-3xl mx-auto p-4 sm:p-6 lg:p-8">
+      <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">{repair.title}</h1>
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-gray-500 mb-6">
+        {repair.categories && repair.categories.length > 0 && (
+          <div className="flex items-center gap-2">
             <Folder className="w-4 h-4" />
-            {repair.categories.map((cat: { name: string }) => cat.name).join(', ')}
-          </div>
-        )}
-
-        {!!repair.tags?.length && (
-          <div className="flex items-center gap-1">
-            <Tag className="w-4 h-4" />
-            {repair.tags.map((tag: { name: string }) => tag.name).join(', ')}
+            {repair.categories.map((cat, index) => (
+              <span key={cat.id}>
+                {cat.name}
+                {index < repair.categories!.length - 1 && ', '}
+              </span>
+            ))}
           </div>
         )}
       </div>
-
-      <div dangerouslySetInnerHTML={{ __html: repair.body ?? '' }} />
-    </div>
+      {repair.mainImage && (
+        <Image
+          src={repair.mainImage.url}
+          alt={repair.title}
+          width={repair.mainImage.width || 800}
+          height={repair.mainImage.height || 600}
+          className="w-full h-auto rounded-lg mb-8"
+        />
+      )}
+      <div className="prose prose-lg max-w-none" dangerouslySetInnerHTML={{ __html: repair.body }} />
+    </article>
   );
-}
-
-export async function generateStaticParams() {
-  const { contents } = await getRepairCases({ limit: 100 });
-  return contents.map((item) => ({ slug: item.slug }));
 }

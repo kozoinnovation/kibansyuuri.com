@@ -1,5 +1,4 @@
 'use client';
-
 import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -27,7 +26,7 @@ export default function RepairCaseCard({ post }: Props) {
       )}
       <div className="p-4">
         <h2 className="text-lg font-semibold text-gray-800">{post.title}</h2>
-        <p className="text-sm text-gray-600 mt-1 line-clamp-2">{post.excerpt}</p>
+        {post.excerpt && <p className="text-sm text-gray-600 mt-1 line-clamp-2">{post.excerpt}</p>}
         <div className="flex items-center gap-2 text-xs text-gray-500 mt-2">
           <Calendar className="w-4 h-4" />
           <span>{new Date(post.createdAt).toLocaleDateString()}</span>
