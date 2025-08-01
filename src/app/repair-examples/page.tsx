@@ -63,7 +63,7 @@ export default function RepairExamplesPage() {
 
     if (selectedCategory !== 'all') {
       currentFiltered = currentFiltered.filter((example) =>
-        example.categories?.some((cat) => cat.slug === selectedCategory)
+        example.categories?.some((cat) => cat.id === selectedCategory) // ← 修正済み
       );
     }
 
