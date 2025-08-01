@@ -1,4 +1,4 @@
-'use client'; // Client Componentとしてマーク
+'use client';
 
 import React, { useState, useEffect, useMemo } from 'react';
 import RepairCaseCard from '@/components/RepairCaseCard';
@@ -37,7 +37,7 @@ export default function RepairExamplesPage() {
     () =>
       Array.from(
         new Set(
-          allRepairExamples.flatMap((ex) => ex.tags?.map((tag) => tag.name) || [])
+          allRepairExamples.flatMap((ex) => ex.symptoms?.map((s) => s.name) || [])
         )
       ),
     [allRepairExamples]
@@ -70,7 +70,7 @@ export default function RepairExamplesPage() {
     if (selectedSymptoms.size > 0) {
       currentFiltered = currentFiltered.filter((example) =>
         Array.from(selectedSymptoms).every((symptomName) =>
-          example.tags?.some((tag) => tag.name === symptomName)
+          example.symptoms?.some((s) => s.name === symptomName)
         )
       );
     }
@@ -109,7 +109,8 @@ export default function RepairExamplesPage() {
           selectedSymptoms={selectedSymptoms}
           handleCategorySelect={handleCategorySelect}
           handleSymptomToggle={handleSymptomToggle}
-          filteredCount={filteredExamples.length} // ← この行を追加しました
+          filteredCount={filteredExamples.length}
+          allSymptoms={allSymptoms}
         />
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
           {filteredExamples.map((post) => (

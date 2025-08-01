@@ -1,48 +1,10 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import Image from 'next/image';
+import React, { useEffect, useMemo, useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import type { RepairCase } from '@/types/repair';
-
-const RepairCard = ({ repairCase }: { repairCase: RepairCase }) => (
-  <div className="bg-white rounded-lg shadow-md overflow-hidden group">
-    <a href={`/repairs/${repairCase.slug}`} className="block">
-      <div className="relative">
-        {repairCase.mainImage?.url ? (
-          <Image
-            src={`${repairCase.mainImage.url}?w=400&auto=format&fit=max`}
-            alt={repairCase.title}
-            width={400}
-            height={250}
-            className="w-full h-48 object-cover"
-          />
-        ) : (
-          <div className="w-full h-48 bg-gray-200" />
-        )}
-        {repairCase.categories && repairCase.categories.length > 0 && (
-          <div className="absolute top-2 left-2 bg-blue-600 text-white text-xs px-2 py-1 rounded">
-            {repairCase.categories[0].name}
-          </div>
-        )}
-      </div>
-      <div className="p-4">
-        <h3 className="font-bold text-lg text-gray-800">{repairCase.title}</h3>
-        <div className="mt-3 flex flex-wrap gap-2">
-          {repairCase.tags
-            ?.filter((tag) => tag && tag.id)
-            .map((tag) => (
-              <span
-                key={tag.id}
-                className="text-xs bg-gray-200 px-2 py-1 rounded-full"
-              >
-                {tag.name}
-              </span>
-            ))}
-        </div>
-      </div>
-    </a>
-  </div>
-);
+import FilterSection from '@/components/FilterSection';
+import RepairCaseCard from '@/components/RepairCaseCard';
 
 type Props = {
   initialRepairs: RepairCase[];
@@ -50,11 +12,65 @@ type Props = {
 };
 
 export default function ClientPage({ initialRepairs, totalCount }: Props) {
-  const [filteredExamples, setFilteredExamples] = useState<RepairCase[]>(initialRepairs);
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
+  const [selectedCategory, setSelectedCategory] = useState('all');
+  const [selectedSymptoms, setSelectedSymptoms] = useState<Set<string>>(new Set());
 
   useEffect(() => {
-    setFilteredExamples(initialRepairs);
+    const category = searchParams.get('category') || 'all';
+    const symptoms = searchParams.get('symptoms');
+    setSelectedCategory(category);
+    setSelectedSymptoms(
+      symptoms
+        ? new Set(decodeURIComponent(symptoms).split(',').filter((s) => s))
+        : new Set()
+    );
+  }, [searchParams]);
+
+  const allSymptoms = useMemo(() => {
+    const set = new Set<string>();
+    initialRepairs.forEach((item) => {
+      item.symptoms?.forEach((s) => s.name && set.add(s.name));
+    });
+    return Array.from(set);
   }, [initialRepairs]);
+
+  const updateQueryParams = (category: string, symptoms: Set<string>) => {
+    const params = new URLSearchParams();
+    if (category !== 'all') params.set('category', category);
+    if (symptoms.size > 0) params.set('symptoms', Array.from(symptoms).join(','));
+    router.replace(`?${params.toString()}`, { scroll: false });
+  };
+
+  const handleCategorySelect = (category: string) => {
+    const newSymptoms = new Set<string>();
+    setSelectedCategory(category);
+    setSelectedSymptoms(newSymptoms);
+    updateQueryParams(category, newSymptoms);
+  };
+
+  const handleSymptomToggle = (symptom: string) => {
+    const newSymptoms = new Set(selectedSymptoms);
+    newSymptoms.has(symptom) ? newSymptoms.delete(symptom) : newSymptoms.add(symptom);
+    setSelectedSymptoms(newSymptoms);
+    updateQueryParams(selectedCategory, newSymptoms);
+  };
+
+  const filteredExamples = useMemo(() => {
+    return initialRepairs.filter((ex) => {
+      const categoryMatch =
+        selectedCategory === 'all' ||
+        ex.categories?.some((cat) => cat.slug === selectedCategory);
+      const symptomMatch =
+        selectedSymptoms.size === 0 ||
+        Array.from(selectedSymptoms).every((s) =>
+          ex.symptoms?.some((sym) => sym.name === s)
+        );
+      return categoryMatch && symptomMatch;
+    });
+  }, [initialRepairs, selectedCategory, selectedSymptoms]);
 
   return (
     <div className="min-h-screen bg-gray-100 p-4">
@@ -65,9 +81,17 @@ export default function ClientPage({ initialRepairs, totalCount }: Props) {
         </p>
       </header>
       <div className="max-w-6xl mx-auto bg-white p-6 rounded-xl shadow-lg">
+        <FilterSection
+          selectedCategory={selectedCategory}
+          selectedSymptoms={selectedSymptoms}
+          handleCategorySelect={handleCategorySelect}
+          handleSymptomToggle={handleSymptomToggle}
+          filteredCount={filteredExamples.length}
+          allSymptoms={allSymptoms}
+        />
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredExamples.map((example) => (
-            <RepairCard key={example.id} repairCase={example} />
+            <RepairCaseCard key={example.id} post={example} />
           ))}
         </div>
       </div>

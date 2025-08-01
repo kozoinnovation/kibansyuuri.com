@@ -69,6 +69,14 @@ export default function RepairExamplesClient() {
     router.push(`?${newSearchParams.toString()}`);
   };
 
+  const allSymptoms = useMemo(() => {
+    const set = new Set<string>();
+    allRepairExamples.forEach((example) => {
+      example.symptoms?.forEach((s) => s.name && set.add(s.name));
+    });
+    return Array.from(set);
+  }, [allRepairExamples]);
+
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -97,6 +105,7 @@ export default function RepairExamplesClient() {
           selectedSymptoms={selectedSymptoms}
           handleCategorySelect={handleCategorySelect}
           handleSymptomToggle={handleSymptomToggle}
+          allSymptoms={allSymptoms} // ← 🔥 これがなかった
         />
       </div>
     </div>

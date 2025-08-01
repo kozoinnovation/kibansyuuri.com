@@ -8,6 +8,7 @@ type FilterSectionProps = {
   handleCategorySelect: (category: string) => void;
   handleSymptomToggle: (symptom: string) => void;
   filteredCount: number;
+  allSymptoms: string[];
 };
 
 const categories = [
@@ -17,22 +18,13 @@ const categories = [
   { id: 'pc', name: 'PC' },
 ];
 
-const allSymptoms = [
-  '起動不可',
-  '水没',
-  'リンゴループ',
-  'バッテリー不良',
-  '画面割れ',
-  '充電できない',
-  '基板ショート',
-];
-
 export default function FilterSection({
   selectedCategory,
   selectedSymptoms,
   handleCategorySelect,
   handleSymptomToggle,
   filteredCount,
+  allSymptoms,
 }: FilterSectionProps) {
   return (
     <div className="mb-6">
@@ -40,12 +32,12 @@ export default function FilterSection({
         {categories.map((category) => (
           <button
             key={category.id}
-            className={`px-4 py-2 rounded-full text-sm ${
+            onClick={() => handleCategorySelect(category.id)}
+            className={`px-4 py-2 rounded-full text-sm transition ${
               selectedCategory === category.id
                 ? 'bg-blue-600 text-white'
                 : 'bg-gray-200 text-gray-800'
             }`}
-            onClick={() => handleCategorySelect(category.id)}
           >
             {category.name}
           </button>
@@ -56,12 +48,12 @@ export default function FilterSection({
         {allSymptoms.map((symptom) => (
           <button
             key={symptom}
-            className={`px-3 py-1 rounded-full text-sm border ${
+            onClick={() => handleSymptomToggle(symptom)}
+            className={`px-3 py-1 rounded-full text-sm border transition ${
               selectedSymptoms.has(symptom)
                 ? 'bg-green-600 text-white border-green-600'
                 : 'bg-white text-gray-700 border-gray-300'
             }`}
-            onClick={() => handleSymptomToggle(symptom)}
           >
             {symptom}
           </button>
