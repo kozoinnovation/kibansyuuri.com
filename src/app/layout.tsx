@@ -1,9 +1,12 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
-import Script from "next/script"; // GA用に追加
+import Script from "next/script";
 
 const inter = Inter({ subsets: ["latin"] });
+
+// ✅ Vercel環境でのデータ再検証を安定させるため追加
+export const revalidate = 60;
 
 export const metadata: Metadata = {
   title: "基板修理.com | 他店で断られたiPhone修理",

@@ -37,12 +37,21 @@ function RepairsClientContent({ initialRepairs, totalCount, categories }: Props)
     return Array.from(set);
   }, [initialRepairs]);
 
+  // ✅ 絞り込み条件を正しく組み合わせるようにロジックを修正
   const updateQueryParams = (category: string, symptoms: Set<string>) => {
     const params = new URLSearchParams(window.location.search);
-    if (category !== 'all') params.set('category', category);
-    else params.delete('category');
-    if (symptoms.size > 0) params.set('symptoms', Array.from(symptoms).join(','));
-    else params.delete('symptoms');
+
+    if (category !== 'all') {
+      params.set('category', category);
+    } else {
+      params.delete('category');
+    }
+
+    if (symptoms.size > 0) {
+      params.set('symptoms', Array.from(symptoms).join(','));
+    } else {
+      params.delete('symptoms');
+    }
     
     const newQuery = params.toString() ? `?${params.toString()}` : '';
     router.push(`/repairs${newQuery}`, { scroll: false });
@@ -57,15 +66,17 @@ function RepairsClientContent({ initialRepairs, totalCount, categories }: Props)
 
   const handleSymptomToggle = (symptom: string) => {
     const newSymptoms = new Set(selectedSymptoms);
-    if (newSymptoms.has(symptom)) newSymptoms.delete(symptom);
-    else newSymptoms.add(symptom);
+    if (newSymptoms.has(symptom)) {
+      newSymptoms.delete(symptom);
+    } else {
+      newSymptoms.add(symptom);
+    }
     setSelectedSymptoms(newSymptoms);
     updateQueryParams(selectedCategory, newSymptoms);
   };
 
   const filteredExamples = useMemo(() => {
     return initialRepairs.filter((ex) => {
-      // ✅ 修正箇所: categories配列を正しくチェック
       const categoryMatch =
         selectedCategory === 'all' ||
         ex.categories?.some((cat) => cat.slug === selectedCategory);

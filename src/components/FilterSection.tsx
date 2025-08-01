@@ -12,7 +12,36 @@ type FilterSectionProps = {
   categories: Category[];
 };
 
-export default function FilterSection({ selectedCategory, selectedSymptoms, handleCategorySelect, handleSymptomToggle, filteredCount, allSymptoms, categories }: FilterSectionProps) {
+export default function FilterSection({
+  selectedCategory,
+  selectedSymptoms,
+  handleCategorySelect,
+  handleSymptomToggle,
+  filteredCount,
+  allSymptoms,
+  categories, // このpropsをチェックします
+}: FilterSectionProps) {
+
+  // ✅ 原因特定のためのデバッグコードを追加
+  if (!categories || !Array.isArray(categories)) {
+    return (
+      <div className="p-4 my-4 text-red-700 bg-red-100 border border-red-400 rounded-lg">
+        <p className="font-bold">デバッグ情報 (エラー):</p>
+        <p>「categories」プロップがコンポーネントに渡されていません。データ取得かPropsの受け渡しに問題があります。</p>
+      </div>
+    );
+  }
+
+  if (categories.length === 0) {
+    return (
+      <div className="p-4 my-4 text-yellow-700 bg-yellow-100 border border-yellow-400 rounded-lg">
+        <p className="font-bold">デバッグ情報 (警告):</p>
+        <p>「categories」データは渡されていますが、中身が0件です。microCMSでカテゴリが登録・公開されているか確認してください。</p>
+      </div>
+    );
+  }
+  // ✅ デバッグコードここまで
+
   return (
     <div className="mb-6">
       <div className="flex flex-wrap gap-2 mb-4">
