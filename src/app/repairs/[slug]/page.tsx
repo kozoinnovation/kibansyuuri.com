@@ -3,11 +3,13 @@ import { notFound } from 'next/navigation';
 import { Folder } from 'lucide-react';
 import Image from 'next/image';
 
+// 静的パス生成
 export async function generateStaticParams() {
-  const { contents } = await getRepairCases({ fields: ['slug'] });
+  const { contents } = await getRepairCases({ fields: ['slug'], limit: 9999 });
   return contents.map((post) => ({ slug: post.slug }));
 }
 
+// ページ本体
 export default async function RepairCasePage({
   params,
 }: {

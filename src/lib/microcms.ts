@@ -3,7 +3,7 @@ import type { RepairCase } from '@/types/repair';
 import type { Category } from '@/types/category';
 import type { Symptom } from '@/types/symptom';
 
-// ✅ NEXT_PUBLIC環境変数対応
+// ✅ NEXT_PUBLIC環境変数対応（クライアント側でも使用可）
 const client = createClient({
   serviceDomain: process.env.NEXT_PUBLIC_MICROCMS_SERVICE_DOMAIN!,
   apiKey: process.env.NEXT_PUBLIC_MICROCMS_API_KEY!,
@@ -14,7 +14,7 @@ const client = createClient({
  */
 export const getRepairCases = async (queries?: MicroCMSQueries) => {
   return await client.getList<RepairCase>({
-    endpoint: 'repair', // ← ✅ エンドポイント名確認済み
+    endpoint: 'repair', // ✅ エンドポイント名を確認
     queries,
   });
 };
@@ -29,9 +29,12 @@ export const getRepairCase = async (slug: string): Promise<RepairCase | null> =>
       queries: { filters: `slug[equals]${slug}` },
     });
     return data.contents[0] || null;
-  } catch (err: any) {
-    console.error('getRepairCase error:', err.message);
-    console.error('詳細:', err);
+  } catch (err: unknown) {
+    if (err instanceof Error) {
+      console.error('getRepairCase error:', err.message);
+    } else {
+      console.error('getRepairCase unknown error:', err);
+    }
     return null;
   }
 };
@@ -41,7 +44,7 @@ export const getRepairCase = async (slug: string): Promise<RepairCase | null> =>
  */
 export const getCategories = async (queries?: MicroCMSQueries): Promise<Category[]> => {
   const data = await client.getList<Category>({
-    endpoint: 'category', // ← ✅ 単数形に注意
+    endpoint: 'category', // ✅ 単数形（確認済み）
     queries,
   });
   return data.contents;
@@ -52,7 +55,7 @@ export const getCategories = async (queries?: MicroCMSQueries): Promise<Category
  */
 export const getSymptoms = async (queries?: MicroCMSQueries): Promise<Symptom[]> => {
   const data = await client.getList<Symptom>({
-    endpoint: 'symptoms', // ← ✅ 複数形
+    endpoint: 'symptoms', // ✅ 複数形（確認済み）
     queries,
   });
   return data.contents;
