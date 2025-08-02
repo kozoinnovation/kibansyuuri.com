@@ -11,6 +11,13 @@ type Props = {
   priority?: boolean; // 🔑 LCP画像判定用（親から渡す）
 };
 
+// 画像URLに WebP変換＋サイズ指定をクエリとして追加する関数
+const getOptimizedImageUrl = (url: string, width = 600): string => {
+  const hasQuery = url.includes('?');
+  const connector = hasQuery ? '&' : '?';
+  return `${url}${connector}fm=webp&w=${width}`;
+};
+
 export default function RepairCaseCard({ post, priority = false }: Props) {
   return (
     <Link
@@ -19,7 +26,7 @@ export default function RepairCaseCard({ post, priority = false }: Props) {
     >
       {post.mainImage?.url && (
         <Image
-          src={post.mainImage.url}
+          src={getOptimizedImageUrl(post.mainImage.url)}
           alt={post.title}
           width={600}
           height={400}
