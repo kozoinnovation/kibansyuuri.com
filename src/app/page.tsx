@@ -203,7 +203,7 @@ const Testimonials = () => {
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center">
           <h2 className="text-3xl font-bold tracking-tight text-gray-900">お客様の声・修理事例</h2>
-          <p className="mt-4 text-lg text-gray-600">数々の修理を成功させてきました。※これはサンプルです。</p>
+          <p className="mt-4 text-lg text-gray-600">数々の修理を成功させてきました。</p>
         </div>
         <div className="mt-12 grid gap-8 lg:grid-cols-3">
           {testimonials.map((item) => (
