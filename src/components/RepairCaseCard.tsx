@@ -8,9 +8,10 @@ import type { RepairCase } from '@/types/repair';
 
 type Props = {
   post: RepairCase;
+  priority?: boolean; // 🔑 LCP画像判定用（親から渡す）
 };
 
-export default function RepairCaseCard({ post }: Props) {
+export default function RepairCaseCard({ post, priority = false }: Props) {
   return (
     <Link
       href={`/repairs/${post.slug}`}
@@ -22,10 +23,11 @@ export default function RepairCaseCard({ post }: Props) {
           alt={post.title}
           width={600}
           height={400}
-          quality={75} // 軽量化のための圧縮率（デフォルトは 75）
+          quality={75}
           className="w-full h-48 object-cover"
-          loading="lazy" // LCP対策：ファーストビュー外なので遅延読み込み
-          unoptimized={false} // microCMSからの画像最適化を有効化（CDN通るならOK）
+          loading={priority ? 'eager' : 'lazy'} // ✅ 最初の画像のみ eager
+          priority={priority} // ✅ LCP対象に最適化
+          sizes="(max-width: 768px) 100vw, 600px" // ✅ レスポンシブ対応
         />
       )}
       <div className="p-4">

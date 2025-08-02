@@ -55,8 +55,8 @@ export default function RepairCaseList({
       />
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
-        {filteredCases.map((post) => (
-          <RepairCaseCard key={post.id} post={post} />
+        {filteredCases.map((post, index) => (
+          <RepairCaseCard key={post.id} post={post} priority={index === 0} />
         ))}
       </div>
     </>
