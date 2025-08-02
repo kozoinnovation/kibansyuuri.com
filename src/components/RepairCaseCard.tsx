@@ -1,4 +1,5 @@
 'use client';
+
 import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -21,7 +22,10 @@ export default function RepairCaseCard({ post }: Props) {
           alt={post.title}
           width={600}
           height={400}
+          quality={75} // 軽量化のための圧縮率（デフォルトは 75）
           className="w-full h-48 object-cover"
+          loading="lazy" // LCP対策：ファーストビュー外なので遅延読み込み
+          unoptimized={false} // microCMSからの画像最適化を有効化（CDN通るならOK）
         />
       )}
       <div className="p-4">
