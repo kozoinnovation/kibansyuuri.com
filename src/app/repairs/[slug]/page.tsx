@@ -2,21 +2,18 @@ import { getRepairCase, getRepairCases } from '@/lib/microcms';
 import { notFound } from 'next/navigation';
 import { Folder } from 'lucide-react';
 import Image from 'next/image';
+import type { RepairCase } from '@/types/repair';
 
 // 静的パス生成
 export async function generateStaticParams() {
-  const { contents } = await getRepairCases({ fields: ['slug'], limit: 9999 });
+  const { contents } = await getRepairCases({ fields: ['slug'] });
   return contents.map((post) => ({ slug: post.slug }));
 }
 
-// ページ本体
-export default async function RepairCasePage({
-  params,
-}: {
-  params: { slug: string };
-}) {
-  const { slug } = params;
-  const repair = await getRepairCase(slug);
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export default async function RepairCasePage(props: any) {
+  const { slug } = props.params;
+  const repair: RepairCase | null = await getRepairCase(slug);
 
   if (!repair) {
     notFound();
