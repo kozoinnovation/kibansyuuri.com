@@ -1,21 +1,14 @@
-import { getRepairCases, getCategories } from '@/lib/microcms';
-import ClientPage from './client-page';
+import RepairExamplesClient from '@/components/RepairExamplesClient';
 
-export const revalidate = 60;
-
-export default async function RepairsPage() {
-  const [repairRes, categoryRes] = await Promise.all([
-    getRepairCases({ limit: 100 }),
-    getCategories({ limit: 100 }),
-  ]);
-
+export default function RepairsPage() {
   return (
-    <main>
-      <ClientPage
-        initialRepairs={repairRes.contents}
-        totalCount={repairRes.totalCount}
-        categories={categoryRes.contents}
-      />
+    <main className="p-4 sm:p-6 lg:p-8">
+      <h1 className="text-3xl sm:text-4xl font-bold text-center mb-8">
+        修理事例一覧
+      </h1>
+      <div className="max-w-6xl mx-auto bg-white p-6 rounded-xl shadow-lg">
+        <RepairExamplesClient />
+      </div>
     </main>
   );
 }

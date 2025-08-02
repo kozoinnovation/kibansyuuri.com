@@ -1,9 +1,10 @@
 'use client';
 
-import React, { useEffect, useMemo, useState, Suspense } from 'react';
+import React, { useMemo, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import type { RepairCase } from '@/types/repair';
 import type { Category } from '@/types/category';
+import type { Symptom } from '@/types/symptom';
 import FilterSection from '@/components/FilterSection';
 import RepairCaseCard from '@/components/RepairCaseCard';
 
@@ -17,62 +18,52 @@ function RepairsClientContent({ initialRepairs, totalCount, categories }: Props)
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  const [selectedCategory, setSelectedCategory] = useState('all');
-  const [selectedSymptoms, setSelectedSymptoms] = useState<Set<string>>(new Set());
-
-  useEffect(() => {
-    const category = searchParams.get('category') || 'all';
-    const symptoms = searchParams.get('symptoms');
-    setSelectedCategory(category);
-    setSelectedSymptoms(
-      symptoms ? new Set(decodeURIComponent(symptoms).split(',').filter(Boolean)) : new Set()
-    );
+  const selectedCategory = searchParams.get('category') || 'all';
+  const selectedSymptoms = useMemo(() => {
+    const symptomsParam = searchParams.get('symptoms');
+    return new Set<string>(symptomsParam ? symptomsParam.split(',').filter(Boolean) : []);
   }, [searchParams]);
 
   const allSymptoms = useMemo(() => {
-    const set = new Set<string>();
+    const symptomsMap = new Map<string, Symptom>();
     initialRepairs.forEach((item) => {
-      item.symptoms?.forEach((s) => s.name && set.add(s.name));
+      item.symptoms?.forEach((s) => {
+        if (s && s.id && s.name) {
+          symptomsMap.set(s.id, s);
+        }
+      });
     });
-    return Array.from(set);
+    return Array.from(symptomsMap.values());
   }, [initialRepairs]);
 
-  // ✅ 絞り込み条件を正しく組み合わせるようにロジックを修正
-  const updateQueryParams = (category: string, symptoms: Set<string>) => {
-    const params = new URLSearchParams(window.location.search);
-
+  const handleCategorySelect = (category: string) => {
+    const params = new URLSearchParams(searchParams.toString());
     if (category !== 'all') {
       params.set('category', category);
     } else {
       params.delete('category');
     }
+    params.delete('symptoms'); // カテゴリ変更時は症状リセット
+    router.push(`/repairs?${params.toString()}`);
+  };
 
-    if (symptoms.size > 0) {
-      params.set('symptoms', Array.from(symptoms).join(','));
+  const handleSymptomToggle = (symptomId: string) => {
+    const params = new URLSearchParams(searchParams.toString());
+    const currentSymptoms = new Set(selectedSymptoms);
+
+    if (currentSymptoms.has(symptomId)) {
+      currentSymptoms.delete(symptomId);
+    } else {
+      currentSymptoms.add(symptomId);
+    }
+
+    if (currentSymptoms.size > 0) {
+      params.set('symptoms', Array.from(currentSymptoms).join(','));
     } else {
       params.delete('symptoms');
     }
-    
-    const newQuery = params.toString() ? `?${params.toString()}` : '';
-    router.push(`/repairs${newQuery}`, { scroll: false });
-  };
 
-  const handleCategorySelect = (category: string) => {
-    const newSymptoms = new Set<string>();
-    setSelectedCategory(category);
-    setSelectedSymptoms(newSymptoms);
-    updateQueryParams(category, newSymptoms);
-  };
-
-  const handleSymptomToggle = (symptom: string) => {
-    const newSymptoms = new Set(selectedSymptoms);
-    if (newSymptoms.has(symptom)) {
-      newSymptoms.delete(symptom);
-    } else {
-      newSymptoms.add(symptom);
-    }
-    setSelectedSymptoms(newSymptoms);
-    updateQueryParams(selectedCategory, newSymptoms);
+    router.push(`/repairs?${params.toString()}`);
   };
 
   const filteredExamples = useMemo(() => {
@@ -80,12 +71,16 @@ function RepairsClientContent({ initialRepairs, totalCount, categories }: Props)
       const categoryMatch =
         selectedCategory === 'all' ||
         ex.categories?.some((cat) => cat.slug === selectedCategory);
-      
+
       const symptomMatch =
         selectedSymptoms.size === 0 ||
-        Array.from(selectedSymptoms).every((s) =>
-          ex.symptoms?.some((sym) => sym.name === s)
+        (
+          ex.symptoms &&
+          Array.from(selectedSymptoms).every((symptomId) =>
+            ex.symptoms!.some((sym) => sym.id === symptomId)
+          )
         );
+
       return categoryMatch && symptomMatch;
     });
   }, [initialRepairs, selectedCategory, selectedSymptoms]);
@@ -116,10 +111,9 @@ function RepairsClientContent({ initialRepairs, totalCount, categories }: Props)
   );
 }
 
-// Suspenseでラップするためのラッパーコンポーネント
 export default function ClientPage(props: Props) {
   return (
-    <Suspense fallback={<div>読み込み中...</div>}>
+    <Suspense>
       <RepairsClientContent {...props} />
     </Suspense>
   );

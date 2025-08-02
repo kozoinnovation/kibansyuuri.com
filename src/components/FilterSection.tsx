@@ -1,79 +1,84 @@
 'use client';
+
 import React from 'react';
+import type { Symptom } from '@/types/symptom';
 import type { Category } from '@/types/category';
 
-type FilterSectionProps = {
+type Props = {
   selectedCategory: string;
   selectedSymptoms: Set<string>;
-  handleCategorySelect: (category: string) => void;
-  handleSymptomToggle: (symptom: string) => void;
   filteredCount: number;
-  allSymptoms: string[];
+  allSymptoms: Symptom[];
   categories: Category[];
+  handleCategorySelect: (category: string) => void;
+  handleSymptomToggle: (symptomId: string) => void;
 };
 
 export default function FilterSection({
   selectedCategory,
   selectedSymptoms,
-  handleCategorySelect,
-  handleSymptomToggle,
   filteredCount,
   allSymptoms,
-  categories, // このpropsをチェックします
-}: FilterSectionProps) {
-
-  // ✅ 原因特定のためのデバッグコードを追加
-  if (!categories || !Array.isArray(categories)) {
-    return (
-      <div className="p-4 my-4 text-red-700 bg-red-100 border border-red-400 rounded-lg">
-        <p className="font-bold">デバッグ情報 (エラー):</p>
-        <p>「categories」プロップがコンポーネントに渡されていません。データ取得かPropsの受け渡しに問題があります。</p>
-      </div>
-    );
-  }
-
-  if (categories.length === 0) {
-    return (
-      <div className="p-4 my-4 text-yellow-700 bg-yellow-100 border border-yellow-400 rounded-lg">
-        <p className="font-bold">デバッグ情報 (警告):</p>
-        <p>「categories」データは渡されていますが、中身が0件です。microCMSでカテゴリが登録・公開されているか確認してください。</p>
-      </div>
-    );
-  }
-  // ✅ デバッグコードここまで
-
+  categories,
+  handleCategorySelect,
+  handleSymptomToggle,
+}: Props) {
   return (
-    <div className="mb-6">
-      <div className="flex flex-wrap gap-2 mb-4">
-        <button
-          key="all"
-          onClick={() => handleCategorySelect('all')}
-          className={`px-4 py-2 rounded-full text-sm transition ${ selectedCategory === 'all' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-800' }`}
-        >
-          すべて
-        </button>
-        {categories.map((category) => (
+    <div className="space-y-6">
+      {/* カテゴリ絞り込み */}
+      <div>
+        <h2 className="text-lg font-semibold mb-2">カテゴリで絞り込み</h2>
+        <div className="flex flex-wrap gap-2">
           <button
-            key={category.id}
-            onClick={() => handleCategorySelect(category.slug)}
-            className={`px-4 py-2 rounded-full text-sm transition ${ selectedCategory === category.slug ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-800' }`}
+            className={`px-4 py-2 rounded border ${
+              selectedCategory === 'all'
+                ? 'bg-blue-500 text-white'
+                : 'bg-white text-gray-700'
+            }`}
+            onClick={() => handleCategorySelect('all')}
           >
-            {category.name}
+            すべて
           </button>
-        ))}
+          {categories.map((cat) => (
+            <button
+              key={cat.id}
+              className={`px-4 py-2 rounded border ${
+                selectedCategory === cat.slug
+                  ? 'bg-blue-500 text-white'
+                  : 'bg-white text-gray-700'
+              }`}
+              onClick={() => handleCategorySelect(cat.slug)}
+            >
+              {cat.name ?? cat.slug ?? 'カテゴリ'}
+            </button>
+          ))}
+        </div>
       </div>
-      <div className="flex flex-wrap gap-2 mb-4">
-        {allSymptoms.map((symptom) => (
-          <button
-            key={symptom}
-            onClick={() => handleSymptomToggle(symptom)}
-            className={`px-3 py-1 rounded-full text-sm border transition ${ selectedSymptoms.has(symptom) ? 'bg-green-600 text-white border-green-600' : 'bg-white text-gray-700 border-gray-300' }`}
-          >
-            {symptom}
-          </button>
-        ))}
+
+      {/* 症状絞り込み */}
+      <div>
+        <h2 className="text-lg font-semibold mb-2">症状で絞り込み</h2>
+        <div className="flex flex-wrap gap-2">
+          {allSymptoms.map((sym) => (
+            <button
+              key={sym.id}
+              className={`px-4 py-2 rounded border ${
+                selectedSymptoms.has(sym.id)
+                  ? 'bg-green-500 text-white'
+                  : 'bg-white text-gray-700'
+              }`}
+              onClick={() => handleSymptomToggle(sym.id)}
+            >
+              {sym.name ?? '症状'}
+            </button>
+          ))}
+        </div>
       </div>
-      <div className="text-sm text-gray-600">{filteredCount} 件が該当しました。</div>
+
+      {/* 件数表示 */}
+      <div className="text-right text-sm text-gray-500">
+        該当件数：{filteredCount} 件
+      </div>
     </div>
   );
 }
