@@ -129,7 +129,7 @@ const CTA = () => (
         <h2 className="text-3xl sm:text-4xl font-extrabold text-white">
           大切なデータを諦めないでください
         </h2>
-        <p className="mt-4 text-lg text-blue-100">
+        <p className="mt-4 text-lg text-white">
           まずは無料診断から。専門スタッフがあなたの状況を詳しくお伺いし、最適な修理方法をご提案します。
         </p>
         <div className="mt-8">
