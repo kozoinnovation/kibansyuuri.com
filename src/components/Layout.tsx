@@ -115,7 +115,6 @@ export const Footer = () => (
           { name: '修理事例', href: '/repairs' },
           { name: 'プライバシーポリシー', href: '/privacy' },
           { name: '利用規約', href: '/terms' },
-          { name: '特定商取引法に基づく表記', href: '/legal' },
           { name: '会社概要', href: '/about' },
         ].map(link => (
           <Link
