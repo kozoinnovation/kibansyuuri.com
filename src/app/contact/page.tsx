@@ -229,46 +229,46 @@ const ContactForm: React.FC = () => {
               修理のご相談、お見積もり依頼など、お気軽にお問い合わせください。
             </p>
 
-          {status.status === 'success' && (
-            <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 p-4 rounded-lg mb-6">
-              <p className="text-green-800 dark:text-green-300 flex items-center"><CheckCircle className="w-5 h-5 mr-2" />{status.message}</p>
-            </div>
-          )}
-          {status.status === 'error' && (
-            <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 p-4 rounded-lg mb-6">
-              <p className="text-red-800 dark:text-red-300 flex items-center"><AlertCircle className="w-5 h-5 mr-2" />{status.message}</p>
-            </div>
-          )}
+            {status.status === 'success' && (
+              <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 p-4 rounded-lg mb-6">
+                <p className="text-green-800 dark:text-green-300 flex items-center"><CheckCircle className="w-5 h-5 mr-2" />{status.message}</p>
+              </div>
+            )}
+            {status.status === 'error' && (
+              <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 p-4 rounded-lg mb-6">
+                <p className="text-red-800 dark:text-red-300 flex items-center"><AlertCircle className="w-5 h-5 mr-2" />{status.message}</p>
+              </div>
+            )}
 
-          <form ref={formRef} onSubmit={onSubmit} className="space-y-6">
-            <InputGroup label="お名前" id="name" error={errors.name?.message} register={register('name')} />
-            <InputGroup label="電話番号" id="phone" error={errors.phone?.message} register={register('phone')} />
-            <InputGroup label="メールアドレス" id="email" error={errors.email?.message} register={register('email')} />
-            <InputGroup label="機種名" id="device" error={errors.device?.message} register={register('device')} placeholder="例: iPhone 13 Pro" />
-            <InputGroup label="故障内容・ご相談内容" id="message" isTextarea error={errors.message?.message} register={register('message')} />
-            <div>
-              <Button type="submit" size="lg" className="w-full" disabled={status.status === 'loading'}>
-                {status.status === 'loading' ? (
-                  <>
-                    <Loader2 className="animate-spin mr-2" />
-                    送信中...
-                  </>
-                ) : (
-                  '同意して送信する'
-                )}
-              </Button>
+            <form ref={formRef} onSubmit={onSubmit} className="space-y-6">
+              <InputGroup label="お名前" id="name" error={errors.name?.message} register={register('name')} />
+              <InputGroup label="電話番号" id="phone" error={errors.phone?.message} register={register('phone')} />
+              <InputGroup label="メールアドレス" id="email" error={errors.email?.message} register={register('email')} />
+              <InputGroup label="機種名" id="device" error={errors.device?.message} register={register('device')} placeholder="例: iPhone 13 Pro" />
+              <InputGroup label="故障内容・ご相談内容" id="message" isTextarea error={errors.message?.message} register={register('message')} />
+              <div>
+                <Button type="submit" size="lg" className="w-full" disabled={status.status === 'loading'}>
+                  {status.status === 'loading' ? (
+                    <>
+                      <Loader2 className="animate-spin mr-2" />
+                      送信中...
+                    </>
+                  ) : (
+                    '同意して送信する'
+                  )}
+                </Button>
+              </div>
+            </form>
+
+            <div className="mt-8 text-center text-sm text-gray-500 dark:text-gray-400">
+              <Link href="/" className="hover:underline">ホームに戻る</Link>
             </div>
-          </form>
 
-          <div className="mt-8 text-center text-sm text-gray-500 dark:text-gray-400">
-            <Link href="/" className="hover:underline">ホームに戻る</Link>
-          </div>
-
-          {/* 予約フォーム */}
-          <div className="mt-16 pt-16 border-t border-gray-200 dark:border-gray-700">
-            <h2 className="text-2xl font-bold text-center mb-8 text-gray-900 dark:text-gray-50">予約フォーム</h2>
-            <div data-zerobook-form="f12f8f17-fb95-4e5a-8899-13274866fe61"></div>
-          </div>
+            {/* 予約フォーム */}
+            <div className="mt-16 pt-16 border-t border-gray-200 dark:border-gray-700">
+              <h2 className="text-2xl font-bold text-center mb-8 text-gray-900 dark:text-gray-50">予約フォーム</h2>
+              <div data-zerobook-form="f12f8f17-fb95-4e5a-8899-13274866fe61"></div>
+            </div>
         </div>
       </div>
     </>
