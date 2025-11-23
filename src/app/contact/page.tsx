@@ -1,12 +1,13 @@
 'use client';
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef } from 'react';
 import { useForm, UseFormRegisterReturn } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import emailjs from '@emailjs/browser';
 import { CircuitBoard, Menu, X, Loader2, AlertCircle, CheckCircle } from 'lucide-react';
 import Link from 'next/link';
+import Script from 'next/script';
 
 // utility for Tailwind classes
 const cn = (...classes: (string | undefined | null | false)[]) =>
@@ -188,37 +189,6 @@ const ContactForm: React.FC = () => {
     resolver: zodResolver(formSchema),
   });
 
-  // 予約フォームスクリプトの読み込み
-  useEffect(() => {
-    // 既にスクリプトが読み込まれているかチェック
-    const scriptUrl = 'https://zerobook.app/embed.js';
-    const existingScript = document.querySelector(`script[src="${scriptUrl}"]`);
-    if (existingScript) {
-      return;
-    }
-
-    const script = document.createElement('script');
-    script.src = scriptUrl;
-    script.async = true;
-    script.onerror = (error) => {
-      console.error('予約フォームスクリプトの読み込みに失敗しました', {
-        url: scriptUrl,
-        error: error,
-      });
-    };
-    script.onload = () => {
-      console.log('予約フォームスクリプトの読み込みが完了しました', scriptUrl);
-    };
-    document.body.appendChild(script);
-
-    return () => {
-      // クリーンアップ（必要に応じて）
-      const scriptToRemove = document.querySelector(`script[src="${scriptUrl}"]`);
-      if (scriptToRemove && scriptToRemove.parentNode) {
-        scriptToRemove.parentNode.removeChild(scriptToRemove);
-      }
-    };
-  }, []);
 
   const onSubmit = handleSubmit(async () => {
     setStatus({ status: 'loading', message: '' });
@@ -239,13 +209,25 @@ const ContactForm: React.FC = () => {
   });
 
   return (
-    <div className="bg-white dark:bg-gray-900 py-16 sm:py-24">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="max-w-2xl mx-auto">
-          <h1 className="text-3xl font-bold text-center mb-4 text-gray-900 dark:text-gray-50">お問い合わせ</h1>
-          <p className="text-center mb-8 text-gray-600 dark:text-gray-300">
-            修理のご相談、お見積もり依頼など、お気軽にお問い合わせください。
-          </p>
+    <>
+      {/* 予約フォームスクリプトの読み込み */}
+      <Script
+        src="https://zerobook.app/embed.js"
+        strategy="afterInteractive"
+        onError={(e) => {
+          console.error('予約フォームスクリプトの読み込みに失敗しました', e);
+        }}
+        onLoad={() => {
+          console.log('予約フォームスクリプトの読み込みが完了しました');
+        }}
+      />
+      <div className="bg-white dark:bg-gray-900 py-16 sm:py-24">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="max-w-2xl mx-auto">
+            <h1 className="text-3xl font-bold text-center mb-4 text-gray-900 dark:text-gray-50">お問い合わせ</h1>
+            <p className="text-center mb-8 text-gray-600 dark:text-gray-300">
+              修理のご相談、お見積もり依頼など、お気軽にお問い合わせください。
+            </p>
 
           {status.status === 'success' && (
             <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 p-4 rounded-lg mb-6">
@@ -289,7 +271,7 @@ const ContactForm: React.FC = () => {
           </div>
         </div>
       </div>
-    </div>
+    </>
   );
 };
 ContactForm.displayName = 'ContactForm';
