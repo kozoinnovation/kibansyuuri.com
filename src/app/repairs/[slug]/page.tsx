@@ -5,8 +5,19 @@ import Image from 'next/image';
 import type { RepairCase } from '@/types/repair';
 
 export async function generateStaticParams() {
-  const { contents } = await getRepairCases({ fields: ['slug'] });
-  return contents.map((post) => ({ slug: post.slug }));
+  // 環境変数が設定されていない場合は空の配列を返す
+  if (!process.env.NEXT_PUBLIC_MICROCMS_SERVICE_DOMAIN || !process.env.NEXT_PUBLIC_MICROCMS_API_KEY) {
+    console.warn('MicroCMS environment variables are not set. Returning empty params.');
+    return [];
+  }
+
+  try {
+    const { contents } = await getRepairCases({ fields: ['slug'] });
+    return contents.map((post) => ({ slug: post.slug }));
+  } catch (error) {
+    console.error('Failed to generate static params:', error);
+    return [];
+  }
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

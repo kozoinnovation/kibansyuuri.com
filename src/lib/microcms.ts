@@ -4,13 +4,17 @@ import type { Category } from '@/types/category';
 import type { Symptom } from '@/types/symptom';
 
 // ✅ NEXT_PUBLIC環境変数を使用（クライアント側でも安全）
-const serviceDomain = process.env.NEXT_PUBLIC_MICROCMS_SERVICE_DOMAIN!;
-const apiKey = process.env.NEXT_PUBLIC_MICROCMS_API_KEY!;
+const serviceDomain = process.env.NEXT_PUBLIC_MICROCMS_SERVICE_DOMAIN;
+const apiKey = process.env.NEXT_PUBLIC_MICROCMS_API_KEY;
 
-const client = createClient({
-  serviceDomain,
-  apiKey,
-});
+// 環境変数が設定されていない場合でもクライアントを作成（ビルド時のエラーを防ぐため）
+// 実際のAPI呼び出し時にはエラーが発生する
+const client = serviceDomain && apiKey
+  ? createClient({
+      serviceDomain,
+      apiKey,
+    })
+  : null;
 
 /**
  * 修理事例を複数取得（一覧用）
@@ -18,6 +22,11 @@ const client = createClient({
 export const getRepairCases = async (
   queries?: MicroCMSQueries
 ): Promise<{ contents: RepairCase[] }> => {
+  if (!client) {
+    throw new Error(
+      'MicroCMS client is not initialized. Please set NEXT_PUBLIC_MICROCMS_SERVICE_DOMAIN and NEXT_PUBLIC_MICROCMS_API_KEY environment variables.'
+    );
+  }
   return await client.getList<RepairCase>({
     endpoint: 'repair', // ✅ エンドポイント名：修理事例
     queries,
@@ -30,6 +39,10 @@ export const getRepairCases = async (
 export const getRepairCase = async (
   slug: string
 ): Promise<RepairCase | null> => {
+  if (!client) {
+    console.error('MicroCMS client is not initialized.');
+    return null;
+  }
   try {
     const { contents } = await client.getList<RepairCase>({
       endpoint: 'repair',
@@ -51,6 +64,11 @@ export const getRepairCase = async (
 export const getCategories = async (
   queries?: MicroCMSQueries
 ): Promise<Category[]> => {
+  if (!client) {
+    throw new Error(
+      'MicroCMS client is not initialized. Please set NEXT_PUBLIC_MICROCMS_SERVICE_DOMAIN and NEXT_PUBLIC_MICROCMS_API_KEY environment variables.'
+    );
+  }
   const { contents } = await client.getList<Category>({
     endpoint: 'category', // ✅ カテゴリエンドポイント（単数）
     queries,
@@ -64,6 +82,11 @@ export const getCategories = async (
 export const getSymptoms = async (
   queries?: MicroCMSQueries
 ): Promise<Symptom[]> => {
+  if (!client) {
+    throw new Error(
+      'MicroCMS client is not initialized. Please set NEXT_PUBLIC_MICROCMS_SERVICE_DOMAIN and NEXT_PUBLIC_MICROCMS_API_KEY environment variables.'
+    );
+  }
   const { contents } = await client.getList<Symptom>({
     endpoint: 'symptoms', // ✅ 症状エンドポイント（複数）
     queries,

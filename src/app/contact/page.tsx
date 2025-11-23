@@ -1,13 +1,12 @@
 'use client';
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useForm, UseFormRegisterReturn } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import emailjs from '@emailjs/browser';
 import { CircuitBoard, Menu, X, Loader2, AlertCircle, CheckCircle } from 'lucide-react';
 import Link from 'next/link';
-import Script from 'next/script';
 
 // utility for Tailwind classes
 const cn = (...classes: (string | undefined | null | false)[]) =>
@@ -208,20 +207,22 @@ const ContactForm: React.FC = () => {
     }
   });
 
+  // 予約フォームスクリプトの読み込み
+  useEffect(() => {
+    // 既にスクリプトが読み込まれているかチェック
+    const existingScript = document.querySelector('script[src="https://zerobook.app/embed.js"]');
+    if (existingScript) {
+      return;
+    }
+
+    const script = document.createElement('script');
+    script.src = 'https://zerobook.app/embed.js';
+    script.async = true;
+    document.body.appendChild(script);
+  }, []);
+
   return (
-    <>
-      {/* 予約フォームスクリプトの読み込み */}
-      <Script
-        src="https://zerobook.app/embed.js"
-        strategy="afterInteractive"
-        onError={(e) => {
-          console.error('予約フォームスクリプトの読み込みに失敗しました', e);
-        }}
-        onLoad={() => {
-          console.log('予約フォームスクリプトの読み込みが完了しました');
-        }}
-      />
-      <div className="bg-white dark:bg-gray-900 py-16 sm:py-24">
+    <div className="bg-white dark:bg-gray-900 py-16 sm:py-24">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-2xl mx-auto">
             <h1 className="text-3xl font-bold text-center mb-4 text-gray-900 dark:text-gray-50">お問い合わせ</h1>
@@ -271,7 +272,7 @@ const ContactForm: React.FC = () => {
             </div>
         </div>
       </div>
-    </>
+    </div>
   );
 };
 ContactForm.displayName = 'ContactForm';
