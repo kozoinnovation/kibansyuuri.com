@@ -113,7 +113,6 @@ export const Footer = () => (
       <nav className="flex justify-center flex-wrap gap-x-6 gap-y-2 mb-8">
         {[
           { name: '修理事例', href: '/repairs' },
-          { name: 'プライバシーポリシー', href: '/privacy' },
           { name: '利用規約', href: '/terms' },
           { name: '会社概要', href: '/about' },
         ].map(link => (

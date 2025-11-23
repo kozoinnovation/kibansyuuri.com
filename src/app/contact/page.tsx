@@ -7,6 +7,7 @@ import * as z from 'zod';
 import emailjs from '@emailjs/browser';
 import { CircuitBoard, Menu, X, Loader2, AlertCircle, CheckCircle } from 'lucide-react';
 import Link from 'next/link';
+import Script from 'next/script';
 
 // utility for Tailwind classes
 const cn = (...classes: (string | undefined | null | false)[]) =>
@@ -249,6 +250,12 @@ const ContactForm: React.FC = () => {
           <div className="mt-8 text-center text-sm text-gray-500 dark:text-gray-400">
             <Link href="/" className="hover:underline">ホームに戻る</Link>
           </div>
+
+          {/* 予約フォーム */}
+          <div className="mt-16 pt-16 border-t border-gray-200 dark:border-gray-700">
+            <h2 className="text-2xl font-bold text-center mb-8 text-gray-900 dark:text-gray-50">予約フォーム</h2>
+            <div data-yoka-form="f12f8f17-fb95-4e5a-8899-13274866fe61"></div>
+          </div>
         </div>
       </div>
     </div>
@@ -262,6 +269,7 @@ export default function ContactPage() {
       <Header />
       <ContactForm />
       <Footer />
+      <Script src="https://www.yokareserve.com/embed.js" strategy="lazyOnload" />
     </div>
   );
 }
