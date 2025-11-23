@@ -1,13 +1,12 @@
 'use client';
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useForm, UseFormRegisterReturn } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import emailjs from '@emailjs/browser';
 import { CircuitBoard, Menu, X, Loader2, AlertCircle, CheckCircle } from 'lucide-react';
 import Link from 'next/link';
-import Script from 'next/script';
 
 // utility for Tailwind classes
 const cn = (...classes: (string | undefined | null | false)[]) =>
@@ -189,6 +188,31 @@ const ContactForm: React.FC = () => {
     resolver: zodResolver(formSchema),
   });
 
+  // 予約フォームスクリプトの読み込み
+  useEffect(() => {
+    // 既にスクリプトが読み込まれているかチェック
+    const existingScript = document.querySelector('script[src="https://www.yokareserve.com/embed.js"]');
+    if (existingScript) {
+      return;
+    }
+
+    const script = document.createElement('script');
+    script.src = 'https://www.yokareserve.com/embed.js';
+    script.async = true;
+    script.onerror = () => {
+      console.error('予約フォームスクリプトの読み込みに失敗しました');
+    };
+    document.body.appendChild(script);
+
+    return () => {
+      // クリーンアップ（必要に応じて）
+      const scriptToRemove = document.querySelector('script[src="https://www.yokareserve.com/embed.js"]');
+      if (scriptToRemove && scriptToRemove.parentNode) {
+        scriptToRemove.parentNode.removeChild(scriptToRemove);
+      }
+    };
+  }, []);
+
   const onSubmit = handleSubmit(async () => {
     setStatus({ status: 'loading', message: '' });
     if (!formRef.current) return;
@@ -269,7 +293,6 @@ export default function ContactPage() {
       <Header />
       <ContactForm />
       <Footer />
-      <Script src="https://www.yokareserve.com/embed.js" strategy="lazyOnload" />
     </div>
   );
 }
