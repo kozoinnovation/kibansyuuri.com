@@ -191,13 +191,13 @@ const ContactForm: React.FC = () => {
   // 予約フォームスクリプトの読み込み
   useEffect(() => {
     // 既にスクリプトが読み込まれているかチェック
-    const existingScript = document.querySelector('script[src="https://www.yokareserve.com/embed.js"]');
+    const existingScript = document.querySelector('script[src="https://embed.zerobook.app/embed.js"]');
     if (existingScript) {
       return;
     }
 
     const script = document.createElement('script');
-    script.src = 'https://www.yokareserve.com/embed.js';
+    script.src = 'https://embed.zerobook.app/embed.js';
     script.async = true;
     script.onerror = () => {
       console.error('予約フォームスクリプトの読み込みに失敗しました');
@@ -206,7 +206,7 @@ const ContactForm: React.FC = () => {
 
     return () => {
       // クリーンアップ（必要に応じて）
-      const scriptToRemove = document.querySelector('script[src="https://www.yokareserve.com/embed.js"]');
+      const scriptToRemove = document.querySelector('script[src="https://embed.zerobook.app/embed.js"]');
       if (scriptToRemove && scriptToRemove.parentNode) {
         scriptToRemove.parentNode.removeChild(scriptToRemove);
       }
@@ -278,7 +278,7 @@ const ContactForm: React.FC = () => {
           {/* 予約フォーム */}
           <div className="mt-16 pt-16 border-t border-gray-200 dark:border-gray-700">
             <h2 className="text-2xl font-bold text-center mb-8 text-gray-900 dark:text-gray-50">予約フォーム</h2>
-            <div data-yoka-form="f12f8f17-fb95-4e5a-8899-13274866fe61"></div>
+            <div data-zerobook-form="f12f8f17-fb95-4e5a-8899-13274866fe61"></div>
           </div>
         </div>
       </div>
