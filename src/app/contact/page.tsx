@@ -191,22 +191,29 @@ const ContactForm: React.FC = () => {
   // 予約フォームスクリプトの読み込み
   useEffect(() => {
     // 既にスクリプトが読み込まれているかチェック
-    const existingScript = document.querySelector('script[src="https://embed.zerobook.app/embed.js"]');
+    const scriptUrl = 'https://zerobook.app/embed.js';
+    const existingScript = document.querySelector(`script[src="${scriptUrl}"]`);
     if (existingScript) {
       return;
     }
 
     const script = document.createElement('script');
-    script.src = 'https://embed.zerobook.app/embed.js';
+    script.src = scriptUrl;
     script.async = true;
-    script.onerror = () => {
-      console.error('予約フォームスクリプトの読み込みに失敗しました');
+    script.onerror = (error) => {
+      console.error('予約フォームスクリプトの読み込みに失敗しました', {
+        url: scriptUrl,
+        error: error,
+      });
+    };
+    script.onload = () => {
+      console.log('予約フォームスクリプトの読み込みが完了しました', scriptUrl);
     };
     document.body.appendChild(script);
 
     return () => {
       // クリーンアップ（必要に応じて）
-      const scriptToRemove = document.querySelector('script[src="https://embed.zerobook.app/embed.js"]');
+      const scriptToRemove = document.querySelector(`script[src="${scriptUrl}"]`);
       if (scriptToRemove && scriptToRemove.parentNode) {
         scriptToRemove.parentNode.removeChild(scriptToRemove);
       }
