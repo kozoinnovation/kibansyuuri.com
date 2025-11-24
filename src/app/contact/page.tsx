@@ -1,12 +1,13 @@
 'use client';
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef } from 'react';
 import { useForm, UseFormRegisterReturn } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import emailjs from '@emailjs/browser';
 import { CircuitBoard, Menu, X, Loader2, AlertCircle, CheckCircle } from 'lucide-react';
 import Link from 'next/link';
+import Script from 'next/script';
 
 // utility for Tailwind classes
 const cn = (...classes: (string | undefined | null | false)[]) =>
@@ -207,19 +208,6 @@ const ContactForm: React.FC = () => {
     }
   });
 
-  // 予約フォームスクリプトの読み込み
-  useEffect(() => {
-    // 既にスクリプトが読み込まれているかチェック
-    const existingScript = document.querySelector('script[src="https://zerobook.app/embed.js"]');
-    if (existingScript) {
-      return;
-    }
-
-    const script = document.createElement('script');
-    script.src = 'https://zerobook.app/embed.js';
-    script.async = true;
-    document.body.appendChild(script);
-  }, []);
 
   return (
     <div className="bg-white dark:bg-gray-900 py-16 sm:py-24">
@@ -269,6 +257,7 @@ const ContactForm: React.FC = () => {
             <div className="mt-16 pt-16 border-t border-gray-200 dark:border-gray-700">
               <h2 className="text-2xl font-bold text-center mb-8 text-gray-900 dark:text-gray-50">予約フォーム</h2>
               <div data-zerobook-form="f12f8f17-fb95-4e5a-8899-13274866fe61"></div>
+              <Script src="https://zerobook.app/embed.js" strategy="afterInteractive" />
             </div>
         </div>
       </div>
